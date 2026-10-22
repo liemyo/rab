@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAB Rumah Otomatis</title>
+<meta name="description" content="Hitung Rencana Anggaran Biaya (RAB) rumah otomatis: volume pekerjaan, analisa harga satuan, daftar belanja material, ekspor Excel & PDF.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#14161b;--mute:#667085;--line:#e3e6eb;--acc:#c2410c;--acc-ink:#fff;--acc2:#fff2ea;--ok:#047857;--in:#fff;--hl:#f9fafb;--bar:#fdba74}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1014;--card:#161920;--ink:#e7e9ee;--mute:#98a2b3;--line:#283040;--acc:#fb923c;--acc-ink:#1a0d04;--acc2:#2a1a10;--ok:#34d399;--in:#10131a;--hl:#1b1f28;--bar:#c2410c}}
+:root[data-theme="dark"]{--bg:#0e1014;--card:#161920;--ink:#e7e9ee;--mute:#98a2b3;--line:#283040;--acc:#fb923c;--acc-ink:#1a0d04;--acc2:#2a1a10;--ok:#34d399;--in:#10131a;--hl:#1b1f28;--bar:#c2410c}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line)}
+.hd{max-width:1400px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em;margin-right:auto}
+.logo{width:32px;height:32px;border-radius:8px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font-size:13px;font-weight:800}
+.brand small{display:block;font-weight:500;font-size:12px;color:var(--mute)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--acc)}
+.btn.p{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.wrap{max-width:1400px;margin:0 auto;padding:16px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+aside{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 14px 14px;position:sticky;top:70px;max-height:calc(100vh - 86px);overflow:auto}
+.sec{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:16px 0 6px}
+.f{display:flex;align-items:center;gap:8px;margin:6px 0}
+.f>label{flex:1;font-size:13px}
+.f .u{font-size:12px;color:var(--mute);min-width:34px}
+.f input[type=text],.f input[type=number],.f select{width:118px;border:1px solid var(--line);background:var(--in);border-radius:7px;padding:6px 8px}
+.f input[type=text]{width:170px}
+.f select{width:170px}
+.f.wide{flex-direction:column;align-items:stretch;gap:4px}
+.f.wide select,.f.wide input{width:100%}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;width:100%}
+.seg button{flex:1;border:0;background:var(--in);padding:6px 4px;cursor:pointer;font-size:13px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--acc);color:var(--acc-ink);font-weight:600}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;margin:8px 0}
+.hint{font-size:12px;color:var(--mute);margin:2px 0 0}
+main{min-width:0}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card .k{font-size:12px;color:var(--mute)}
+.card .v{font-size:20px;font-weight:700;margin-top:2px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.card.big{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.card.big .k{color:inherit;opacity:.85}
+.card.big .v{font-size:24px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:9px 12px;cursor:pointer;font-weight:600;color:var(--mute);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-color:var(--acc)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto}
+.panel h3{margin:4px 0 10px;font-size:15px}
+.panel+.panel{margin-top:12px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--mute);font-weight:600;background:var(--hl);position:sticky;top:0}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.g td{background:var(--acc2);font-weight:700}
+tr.st td{font-weight:700;background:var(--hl)}
+tr.tot td{font-weight:800;font-size:15px}
+.rab td:first-child{width:40px;color:var(--mute)}
+.nm{cursor:pointer}
+.nm:hover{color:var(--acc)}
+.fx{display:block;font-size:11.5px;color:var(--mute);margin-top:2px}
+.vin{width:84px;text-align:right;border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 5px}
+.vin:hover,.vin:focus{border-color:var(--line);background:var(--in)}
+.vin.ov{border-color:var(--acc);background:var(--acc2)}
+.rs{border:0;background:none;color:var(--acc);cursor:pointer;font-size:12px;padding:0 2px}
+.an td{background:var(--hl);font-size:12.5px}
+.an table td,.an table th{padding:4px 6px;background:transparent}
+.bars .row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,2fr) 120px 52px;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}
+.bars .tr{height:10px;background:var(--hl);border-radius:6px;overflow:hidden}
+.bars .tr i{display:block;height:100%;background:var(--acc);border-radius:6px}
+.mute{color:var(--mute)}
+.pin{width:120px;text-align:right;border:1px solid var(--line);background:var(--in);border-radius:6px;padding:4px 6px}
+.pin.ov{border-color:var(--acc);background:var(--acc2)}
+.tb{width:100%;border:1px solid var(--line);background:var(--in);border-radius:6px;padding:4px 6px}
+.note{font-size:12.5px;color:var(--mute);line-height:1.55}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kv td:first-child{color:var(--mute)}
+.ter{font-style:italic;color:var(--mute);font-size:13px;margin-top:8px}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);padding:16px;width:min(520px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+.pl{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.pl b{flex:1;font-weight:600}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:50}
+.toast.on{opacity:1}
+#print{display:none}
+footer{max-width:1400px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color:var(--mute)}
+@media (max-width:1300px){.grid2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}aside{position:static;max-height:none}.grid2{grid-template-columns:minmax(0,1fr)}.bars .row{grid-template-columns:minmax(0,1fr) 110px 46px}.bars .tr{grid-column:1/-1;grid-row:2}}
+@media (max-width:520px){.hd .btn{padding:6px 9px;font-size:13px}.card .v{font-size:17px}.card.big .v{font-size:19px}.f input[type=text],.f select{width:150px}}
+@media print{
+  @page{size:A4;margin:14mm 12mm}
+  body{background:#fff;color:#000;font-size:10.5px}
+  header,.wrap,footer,.toast,dialog{display:none!important}
+  #print{display:block}
+  #print h1{font-size:16px;margin:0 0 2px;text-align:center}
+  #print h2{font-size:12.5px;margin:16px 0 6px}
+  #print .meta{width:auto;margin:8px 0 4px}
+  #print .meta td{border:0;padding:1px 10px 1px 0}
+  #print table{width:100%}
+  #print th,#print td{border:1px solid #999;padding:3px 5px;color:#000}
+  #print th{background:#eee;position:static}
+  #print tr.g td{background:#f3f3f3}
+  #print tr.st td,#print tr.tot td{background:#fafafa}
+  #print tr{page-break-inside:avoid}
+  #print .brk{page-break-before:always}
+  #print .sign{display:flex;justify-content:space-between;margin-top:28px;text-align:center}
+  #print .sign div{width:40%}
+}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="brand"><div class="logo">RAB</div><div>RAB Rumah Otomatis<small>Volume · Analisa harga satuan · Daftar material</small></div></div>
+  <button class="btn" id="bProj">📁 Proyek</button>
+  <button class="btn" id="bXls">⬇ Excel</button>
+  <button class="btn p" id="bPdf">🖨 PDF / Cetak</button>
+</div></header>
+
+<div class="wrap">
+  <aside id="form"></aside>
+  <main>
+    <div class="cards" id="cards"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="view"></div>
+  </main>
+</div>
+<footer>Hasil adalah estimasi berdasarkan koefisien analisa harga satuan (acuan AHSP/SNI, disesuaikan praktik lapangan) dan harga rata-rata. Sesuaikan harga di tab <b>Harga Dasar</b> dengan harga toko dan upah di daerah Anda. Data tersimpan di browser ini saja.</footer>
+
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast"></div>
+<div id="print"></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const QI={s:0,m:1,w:2}, QN={s:'Sederhana',m:'Menengah',w:'Mewah'};
+
+/* ---------- Harga dasar (bahan, upah, borongan) ----------
+   p: angka, atau [sederhana, menengah, mewah] untuk barang yang mutunya ikut pilihan kualitas.
+   k: u = upah, b = bahan, s = borongan/terpasang. pk: kemasan untuk daftar belanja. */
+const R={
+ pekerja:{n:'Pekerja',u:'OH',p:120000,k:'u'},
+ tukang:{n:'Tukang (batu/kayu/besi/cat)',u:'OH',p:150000,k:'u'},
+ kepala:{n:'Kepala tukang',u:'OH',p:170000,k:'u'},
+ mandor:{n:'Mandor',u:'OH',p:180000,k:'u'},
+ semen:{n:'Semen Portland',u:'kg',p:1450,k:'b',pk:[50,'zak']},
+ pasirPasang:{n:'Pasir pasang',u:'m³',p:300000,k:'b'},
+ pasirBeton:{n:'Pasir beton',u:'m³',p:330000,k:'b'},
+ pasirUrug:{n:'Pasir urug',u:'m³',p:220000,k:'b'},
+ split:{n:'Batu split / kerikil 1–2 cm',u:'m³',p:360000,k:'b'},
+ batuKali:{n:'Batu kali / batu belah',u:'m³',p:290000,k:'b'},
+ tanahUrug:{n:'Tanah urug',u:'m³',p:150000,k:'b'},
+ bata:{n:'Bata merah',u:'bh',p:900,k:'b'},
+ hebel:{n:'Bata ringan (hebel) 10 cm',u:'m³',p:720000,k:'b',pk:[1/83.3,'bh']},
+ perekat:{n:'Perekat bata ringan',u:'kg',p:2900,k:'b',pk:[40,'sak']},
+ plesInstan:{n:'Mortar plester instan',u:'kg',p:2100,k:'b',pk:[40,'sak']},
+ aciInstan:{n:'Mortar acian instan',u:'kg',p:3600,k:'b',pk:[40,'sak']},
+ besi:{n:'Besi beton (polos/ulir)',u:'kg',p:14000,k:'b'},
+ kawat:{n:'Kawat bendrat',u:'kg',p:25000,k:'b'},
+ kayu:{n:'Kayu kelas III (bekisting)',u:'m³',p:3500000,k:'b'},
+ plywood:{n:'Plywood 9 mm',u:'lbr',p:145000,k:'b'},
+ paku:{n:'Paku 5–12 cm',u:'kg',p:22000,k:'b'},
+ minyak:{n:'Minyak bekisting',u:'ltr',p:15000,k:'b'},
+ perancah:{n:'Sewa perancah (scaffolding)',u:'m²',p:20000,k:'b'},
+ keramik40:{n:'Keramik lantai 40×40',u:'m²',p:[60000,80000,130000],k:'b'},
+ granit60:{n:'Granit 60×60',u:'m²',p:[140000,190000,380000],k:'b'},
+ keramikKM:{n:'Keramik lantai KM 25×25 (anti slip)',u:'m²',p:[55000,75000,130000],k:'b'},
+ keramikDinding:{n:'Keramik dinding 25×40',u:'m²',p:[55000,80000,150000],k:'b'},
+ nat:{n:'Semen nat / pengisi',u:'kg',p:18000,k:'b'},
+ plint:{n:'Plint keramik',u:"m'",p:[9000,14000,30000],k:'b'},
+ waterproof:{n:'Waterproofing coating',u:'kg',p:45000,k:'b'},
+ plamir:{n:'Plamir tembok',u:'kg',p:13000,k:'b'},
+ catDasar:{n:'Cat dasar (sealer)',u:'kg',p:[22000,28000,40000],k:'b'},
+ catDalam:{n:'Cat tembok interior',u:'kg',p:[24000,38000,70000],k:'b'},
+ catLuar:{n:'Cat tembok eksterior',u:'kg',p:[38000,60000,110000],k:'b'},
+ gypsum:{n:'Papan gypsum 9 mm (120×240)',u:'lbr',p:78000,k:'b'},
+ grc:{n:'Papan GRC 4 mm (120×240)',u:'lbr',p:72000,k:'b'},
+ hollow:{n:'Rangka hollow galvalum (4 m)',u:'btg',p:29000,k:'b'},
+ compound:{n:'Compound gypsum',u:'kg',p:13000,k:'b'},
+ sekrup:{n:'Sekrup gypsum',u:'bh',p:120,k:'b'},
+ sekrupAtap:{n:'Sekrup atap',u:'bh',p:350,k:'b'},
+ listPlafon:{n:'List profil plafon',u:"m'",p:[12000,25000,65000],k:'b'},
+ gentengMetal:{n:'Genteng metal pasir',u:'lbr',p:46000,k:'b'},
+ gentengBeton:{n:'Genteng beton flat',u:'bh',p:8500,k:'b'},
+ bubMetal:{n:'Bubungan metal',u:"m'",p:48000,k:'b'},
+ bubBeton:{n:'Bubungan genteng beton',u:'bh',p:13000,k:'b'},
+ lisplang:{n:'Lisplang GRC/kalsiboard',u:"m'",p:[55000,75000,130000],k:'b'},
+ pintuUtama:{n:'Pintu utama (kusen+daun+kunci)',u:'unit',p:[2600000,4600000,9500000],k:'b'},
+ pintuKamar:{n:'Pintu kamar (kusen+daun+kunci)',u:'unit',p:[1400000,2400000,4800000],k:'b'},
+ pintuKM:{n:'Pintu kamar mandi PVC/aluminium',u:'unit',p:[700000,1150000,2300000],k:'b'},
+ jendela:{n:'Jendela kaca + kusen aluminium',u:'unit',p:[1050000,1650000,3300000],k:'b'},
+ bouvenlight:{n:'Bouvenlight / ventilasi',u:'unit',p:[250000,400000,750000],k:'b'},
+ closet:{n:'Kloset (jongkok/duduk sesuai kualitas)',u:'bh',p:[450000,1900000,5500000],k:'b'},
+ wastafel:{n:'Wastafel',u:'bh',p:[320000,700000,2200000],k:'b'},
+ kran:{n:'Kran air',u:'bh',p:[40000,85000,350000],k:'b'},
+ shower:{n:'Shower',u:'bh',p:[110000,260000,1300000],k:'b'},
+ floorDrain:{n:'Floor drain',u:'bh',p:[35000,65000,180000],k:'b'},
+ kitchenSink:{n:'Kitchen sink',u:'bh',p:[450000,950000,2600000],k:'b'},
+ bajaRingan:{n:'Rangka atap baja ringan + reng (terpasang)',u:'m²',p:185000,k:'s'},
+ mejaDapur:{n:'Meja dapur beton + top (terpasang)',u:"m'",p:[900000,1400000,3600000],k:'s'},
+ pipaBersih:{n:'Instalasi air bersih per titik (terpasang)',u:'titik',p:450000,k:'s'},
+ pipaKotor:{n:'Instalasi air kotor per unit (terpasang)',u:'unit',p:1600000,k:'s'},
+ septic:{n:'Septic tank biofil + resapan (terpasang)',u:'unit',p:5200000,k:'s'},
+ sumur:{n:'Sumur bor ±30 m (borongan)',u:'ls',p:6500000,k:'s'},
+ pompa:{n:'Pompa air',u:'unit',p:[1100000,1600000,3500000],k:'b'},
+ toren:{n:'Tandon air 1.000 L + dudukan',u:'unit',p:[1200000,1500000,2800000],k:'b'},
+ pdam:{n:'Penyambungan PDAM',u:'ls',p:2500000,k:'s'},
+ titikLampu:{n:'Instalasi titik lampu + saklar (terpasang)',u:'titik',p:[240000,290000,400000],k:'s'},
+ titikStop:{n:'Instalasi stop kontak (terpasang)',u:'titik',p:[250000,300000,420000],k:'s'},
+ lampu:{n:'Lampu LED',u:'bh',p:[35000,65000,190000],k:'b'},
+ panel:{n:'Box panel MCB',u:'unit',p:[900000,1500000,3000000],k:'s'},
+ grounding:{n:'Grounding / arde',u:'set',p:750000,k:'s'},
+ plnVA:{n:'Penyambungan PLN + SLO/NIDI',u:'VA',p:1000,k:'s'},
+ railing:{n:'Railing tangga (terpasang)',u:"m'",p:[450000,750000,1800000],k:'s'},
+ gudang:{n:'Direksi keet / gudang sementara',u:'ls',p:3500000,k:'s'},
+ airListrik:{n:'Air & listrik kerja',u:'bln',p:750000,k:'s'},
+};
+
+/* ---------- Analisa harga satuan (koefisien per satuan pekerjaan) ----------
+   '@kode' = memakai analisa lain (mis. beton bertulang = beton + besi + bekisting). */
+const L4=(p,t,k,m)=>({pekerja:p,tukang:t,kepala:k,mandor:m});
+const A={
+ bersih:{n:'Pembersihan lahan',u:'m²',r:{pekerja:.1,mandor:.05}},
+ bouwplank:{n:'Pengukuran & pemasangan bouwplank',u:"m'",r:{kayu:.012,paku:.02,...L4(.1,.1,.01,.005)}},
+ gudang:{n:'Direksi keet / gudang',u:'ls',r:{gudang:1}},
+ airListrik:{n:'Air & listrik kerja',u:'bln',r:{airListrik:1}},
+ galian:{n:'Galian tanah biasa',u:'m³',r:{pekerja:.75,mandor:.025}},
+ urugKembali:{n:'Urugan tanah kembali',u:'m³',r:{pekerja:.25,mandor:.008}},
+ urugPasir:{n:'Urugan pasir',u:'m³',r:{pasirUrug:1.2,pekerja:.3,mandor:.01}},
+ urugTanah:{n:'Urugan tanah peninggian lantai',u:'m³',r:{tanahUrug:1.2,pekerja:.5,mandor:.05}},
+ aanstamping:{n:'Pasangan batu kosong (aanstamping)',u:'m³',r:{batuKali:1.2,pasirUrug:.432,...L4(.78,.39,.039,.039)}},
+ batuKali:{n:'Pasangan pondasi batu kali 1:4',u:'m³',r:{batuKali:1.2,semen:163,pasirPasang:.52,...L4(1.5,.75,.075,.075)}},
+ beton225:{n:'Beton mutu K-225 (fc 18,7 MPa) site mix',u:'m³',r:{semen:371,pasirBeton:.499,split:.776,...L4(1.65,.275,.028,.083)}},
+ beton135:{n:'Beton lantai kerja 1:3:5',u:'m³',r:{semen:218,pasirBeton:.62,split:.75,...L4(1.2,.2,.02,.06)}},
+ besi:{n:'Pembesian (potong, bengkok, pasang)',u:'kg',r:{besi:1.05,kawat:.015,...L4(.007,.007,.0007,.0004)}},
+ bekisting:{n:'Bekisting sloof/kolom/balok (pakai ulang)',u:'m²',r:{kayu:.02,paku:.3,minyak:.1,...L4(.52,.26,.026,.026)}},
+ bekistingPlat:{n:'Bekisting plat + perancah',u:'m²',r:{kayu:.015,plywood:.35,paku:.4,minyak:.2,perancah:1,...L4(.66,.33,.033,.033)}},
+ sloof:{n:'Sloof 15×20 beton bertulang (4D10, Ø8-150)',u:'m³',r:{'@beton225':1,'@besi':147,'@bekisting':13.3}},
+ kolomPraktis:{n:'Kolom praktis 13×13 (4D10, Ø8-150)',u:'m³',r:{'@beton225':1,'@besi':231,'@bekisting':15.4}},
+ kolom20:{n:'Kolom struktur 20×20 (4D13, Ø8-150)',u:'m³',r:{'@beton225':1,'@besi':160,'@bekisting':20}},
+ ring:{n:'Ring balok 12×15 (4D10, Ø8-150)',u:'m³',r:{'@beton225':1,'@besi':217,'@bekisting':16.7}},
+ balok:{n:'Balok lantai 20×35 (6D13, Ø8-150)',u:'m³',r:{'@beton225':1,'@besi':134,'@bekisting':12.9}},
+ plat:{n:'Plat lantai t=12 cm (D10-150)',u:'m³',r:{'@beton225':1,'@besi':100,'@bekistingPlat':8.33}},
+ footplat:{n:'Footplat 100×100×25 (D13-150)',u:'m³',r:{'@beton225':1,'@besi':64,'@bekisting':4}},
+ tangga:{n:'Tangga beton bertulang',u:'m³',r:{'@beton225':1,'@besi':110,'@bekistingPlat':6}},
+ bata:{n:'Pasangan dinding bata merah ½ bata 1:4',u:'m²',r:{bata:70,semen:11.5,pasirPasang:.043,...L4(.2,.1,.01,.01)}},
+ hebel:{n:'Pasangan dinding bata ringan t=10 cm',u:'m²',r:{hebel:.105,perekat:4,...L4(.15,.08,.008,.008)}},
+ plester:{n:'Plesteran 1:4 tebal 15 mm',u:'m²',r:{semen:6.24,pasirPasang:.024,...L4(.15,.1,.01,.005)}},
+ plesterInstan:{n:'Plesteran mortar instan tebal 10 mm',u:'m²',r:{plesInstan:14,...L4(.13,.09,.009,.005)}},
+ acian:{n:'Acian semen',u:'m²',r:{semen:3.25,...L4(.1,.07,.007,.004)}},
+ acianInstan:{n:'Acian mortar instan',u:'m²',r:{aciInstan:3,...L4(.08,.06,.006,.003)}},
+ keramik:{n:'Pasang keramik lantai 40×40',u:'m²',r:{keramik40:1.05,semen:10,pasirPasang:.045,nat:.5,...L4(.25,.2,.02,.01)}},
+ granit:{n:'Pasang granit lantai 60×60',u:'m²',r:{granit60:1.05,semen:10,pasirPasang:.045,nat:.4,...L4(.3,.25,.025,.01)}},
+ keramikKM:{n:'Pasang keramik lantai KM 25×25',u:'m²',r:{keramikKM:1.05,semen:10.4,pasirPasang:.045,nat:.6,...L4(.3,.22,.022,.01)}},
+ keramikDinding:{n:'Pasang keramik dinding 25×40',u:'m²',r:{keramikDinding:1.05,semen:9.3,pasirPasang:.018,nat:.5,...L4(.3,.25,.025,.01)}},
+ plint:{n:'Pasang plint keramik',u:"m'",r:{plint:1.05,semen:.5,nat:.05,...L4(.04,.08,.008,.004)}},
+ waterproof:{n:'Waterproofing lantai kamar mandi',u:'m²',r:{waterproof:1.5,...L4(.05,.1,.01,.005)}},
+ mejaDapur:{n:'Meja dapur',u:"m'",r:{mejaDapur:1}},
+ pintuUtama:{n:'Pasang pintu utama',u:'unit',r:{pintuUtama:1,...L4(.8,1.2,.12,.05)}},
+ pintuKamar:{n:'Pasang pintu kamar',u:'unit',r:{pintuKamar:1,...L4(.6,1,.1,.04)}},
+ pintuKM:{n:'Pasang pintu kamar mandi',u:'unit',r:{pintuKM:1,...L4(.4,.6,.06,.03)}},
+ jendela:{n:'Pasang jendela kaca + kusen',u:'unit',r:{jendela:1,...L4(.3,.6,.06,.02)}},
+ bouvenlight:{n:'Pasang bouvenlight',u:'unit',r:{bouvenlight:1,...L4(.1,.2,.02,.005)}},
+ bajaRingan:{n:'Rangka atap baja ringan + reng',u:'m²',r:{bajaRingan:1}},
+ gentengMetal:{n:'Penutup atap genteng metal pasir',u:'m²',r:{gentengMetal:1.65,sekrupAtap:6,...L4(.08,.12,.012,.004)}},
+ gentengBeton:{n:'Penutup atap genteng beton',u:'m²',r:{gentengBeton:10,...L4(.15,.15,.015,.005)}},
+ bubMetal:{n:'Bubungan metal',u:"m'",r:{bubMetal:1,sekrupAtap:4,...L4(.05,.1,.01,.003)}},
+ bubBeton:{n:'Bubungan genteng beton',u:"m'",r:{bubBeton:3.2,semen:3,pasirPasang:.006,...L4(.1,.2,.02,.005)}},
+ lisplang:{n:'Lisplang',u:"m'",r:{lisplang:1,...L4(.05,.1,.01,.003)}},
+ plafonGypsum:{n:'Plafon gypsum 9 mm rangka hollow',u:'m²',r:{gypsum:.364,hollow:1,compound:.3,sekrup:20,...L4(.1,.25,.025,.005)}},
+ plafonGRC:{n:'Plafon GRC 4 mm rangka hollow',u:'m²',r:{grc:.364,hollow:1,compound:.2,sekrup:20,...L4(.1,.25,.025,.005)}},
+ listPlafon:{n:'List profil plafon',u:"m'",r:{listPlafon:1.05,compound:.05,...L4(.03,.06,.006,.002)}},
+ catDalam:{n:'Pengecatan tembok/plafon interior (1 dasar + 2 akhir)',u:'m²',r:{plamir:.1,catDasar:.1,catDalam:.26,...L4(.02,.063,.0063,.0025)}},
+ catLuar:{n:'Pengecatan tembok eksterior (1 dasar + 2 akhir)',u:'m²',r:{plamir:.1,catDasar:.12,catLuar:.3,...L4(.025,.07,.007,.0025)}},
+ closet:{n:'Pasang kloset',u:'bh',r:{closet:1,...L4(.7,1,.1,.03)}},
+ wastafel:{n:'Pasang wastafel',u:'bh',r:{wastafel:1,...L4(.3,.6,.06,.015)}},
+ kran:{n:'Pasang kran',u:'bh',r:{kran:1,pekerja:.01,tukang:.1}},
+ shower:{n:'Pasang shower',u:'bh',r:{shower:1,pekerja:.05,tukang:.15}},
+ floorDrain:{n:'Pasang floor drain',u:'bh',r:{floorDrain:1,pekerja:.01,tukang:.1}},
+ kitchenSink:{n:'Pasang kitchen sink',u:'bh',r:{kitchenSink:1,...L4(.3,.6,.06,.015)}},
+ pipaBersih:{n:'Instalasi air bersih',u:'titik',r:{pipaBersih:1}},
+ pipaKotor:{n:'Instalasi air kotor',u:'unit',r:{pipaKotor:1}},
+ septic:{n:'Septic tank',u:'unit',r:{septic:1}},
+ sumur:{n:'Sumur bor',u:'ls',r:{sumur:1}},
+ pompa:{n:'Pasang pompa air',u:'unit',r:{pompa:1,pekerja:.3,tukang:.5}},
+ toren:{n:'Pasang tandon air',u:'unit',r:{toren:1,pekerja:1,tukang:1}},
+ pdam:{n:'Sambungan PDAM',u:'ls',r:{pdam:1}},
+ titikLampu:{n:'Titik lampu',u:'titik',r:{titikLampu:1}},
+ titikStop:{n:'Titik stop kontak',u:'titik',r:{titikStop:1}},
+ lampu:{n:'Pasang lampu LED',u:'bh',r:{lampu:1,tukang:.02}},
+ panel:{n:'Box panel MCB',u:'unit',r:{panel:1}},
+ grounding:{n:'Grounding',u:'set',r:{grounding:1}},
+ pln:{n:'Penyambungan daya PLN',u:'VA',r:{plnVA:1}},
+ railing:{n:'Railing tangga',u:"m'",r:{railing:1}},
+ bersihAkhir:{n:'Pembersihan akhir',u:'m²',r:{pekerja:.04,mandor:.004}},
+};
+
+const REG=[['Jawa (rata-rata)',1],['Jabodetabek',1.1],['Bali & Nusa Tenggara',1.08],['Sumatera',1.05],['Kalimantan',1.15],['Sulawesi',1.1],['Maluku & Maluku Utara',1.3],['Papua',1.55]];
+const DEF={nama:'Rumah Tinggal',pemilik:'',lokasi:'',P:10,L:7,lantai:1,pct2:100,tinggi:3.5,peil:.3,teras:8,kt:3,km:2,dalam:0,
+ kualitas:'m',dinding:'bata',lantaiFin:'keramik',atap:'metal',bentuk:'pelana',plafon:'gypsum',air:'sumur',daya:2200,wil:0,idx:1,jasa:10,tt:5,ppn:false};
+
+const FIELDS=[
+ {sec:'Proyek'},
+ {id:'nama',l:'Nama proyek',t:'text'},
+ {id:'pemilik',l:'Pemilik',t:'text'},
+ {id:'lokasi',l:'Lokasi',t:'text'},
+ {sec:'Ukuran bangunan'},
+ {id:'P',l:'Panjang bangunan',u:'m'},
+ {id:'L',l:'Lebar bangunan',u:'m'},
+ {id:'lantai',l:'Jumlah lantai',t:'seg',o:[[1,'1 lantai'],[2,'2 lantai']]},
+ {id:'pct2',l:'Luas lantai 2',u:'% lt.1',show:I=>I.lantai==2},
+ {id:'tinggi',l:'Tinggi dinding per lantai',u:'m'},
+ {id:'peil',l:'Peninggian lantai dari tanah',u:'m'},
+ {id:'teras',l:'Luas teras / carport',u:'m²'},
+ {sec:'Ruangan'},
+ {id:'kt',l:'Kamar tidur',u:'ruang'},
+ {id:'km',l:'Kamar mandi',u:'ruang'},
+ {id:'dalam',l:'Panjang dinding dalam (0 = otomatis)',u:"m'"},
+ {sec:'Spesifikasi'},
+ {id:'kualitas',l:'Kualitas finishing',t:'seg',o:[['s','Sederhana'],['m','Menengah'],['w','Mewah']]},
+ {id:'dinding',l:'Dinding',t:'sel',o:[['bata','Bata merah'],['hebel','Bata ringan (hebel)']]},
+ {id:'lantaiFin',l:'Lantai',t:'sel',o:[['keramik','Keramik 40×40'],['granit','Granit 60×60']]},
+ {id:'atap',l:'Penutup atap',t:'sel',o:[['metal','Genteng metal pasir'],['beton','Genteng beton']]},
+ {id:'bentuk',l:'Bentuk atap',t:'sel',o:[['pelana','Pelana'],['limas','Limas']]},
+ {id:'plafon',l:'Plafon',t:'sel',o:[['gypsum','Gypsum 9 mm'],['grc','GRC 4 mm']]},
+ {id:'air',l:'Sumber air',t:'sel',o:[['sumur','Sumur bor + pompa'],['pdam','Sambungan PDAM']]},
+ {id:'daya',l:'Daya listrik PLN',t:'sel',o:[[1300,'1.300 VA'],[2200,'2.200 VA'],[3500,'3.500 VA'],[4400,'4.400 VA'],[5500,'5.500 VA']]},
+ {sec:'Harga & biaya'},
+ {id:'wil',l:'Wilayah (indeks harga)',t:'sel',o:REG.map((r,i)=>[i,r[0]+' · '+r[1].toFixed(2)])},
+ {id:'idx',l:'Indeks harga',u:'×'},
+ {id:'jasa',l:'Jasa kontraktor (overhead + untung)',u:'%'},
+ {id:'tt',l:'Biaya tak terduga',u:'%'},
+ {id:'ppn',l:'Tambahkan PPN 11%',t:'chk'},
+];
+
+/* ---------- Penyimpanan ---------- */
+const LS={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function fresh(){return{I:{...DEF},ov:{},hp:{},extra:[]}}
+let S=LS.get('rab-current-v1');
+if(!S||!S.I)S=fresh();
+S.I={...DEF,...S.I};S.ov=S.ov||{};S.hp=S.hp||{};S.extra=S.extra||[];
+let tab=LS.get('rab-tab')||'ringkas', open=new Set();
+let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>LS.set('rab-current-v1',S),250)}
+
+/* ---------- Format angka ---------- */
+const num=v=>{if(typeof v=='number')return isFinite(v)?v:0;const x=parseFloat(String(v).replace(/\./g,'').replace(',','.'));return isFinite(x)?x:0};
+const numIn=v=>{const s=String(v).trim();const x=parseFloat(/,/.test(s)?s.replace(/\./g,'').replace(',','.'):s);return isFinite(x)?x:0};
+const fmt=(x,d=0)=>(+x).toLocaleString('id-ID',{minimumFractionDigits:d,maximumFractionDigits:d});
+const dec=x=>(+x).toLocaleString('id-ID',{maximumFractionDigits:2});
+const rp=x=>'Rp '+fmt(Math.round(x));
+const rpS=x=>x>=1e9?'Rp '+dec(x/1e9)+' M':x>=1e6?'Rp '+dec(x/1e6)+' jt':rp(x);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ROM=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV'];
+function terbilang(n){n=Math.floor(Math.max(0,n));const s=['','satu','dua','tiga','empat','lima','enam','tujuh','delapan','sembilan','sepuluh','sebelas'];
+ const t=x=>x<12?s[x]:x<20?t(x-10)+' belas':x<100?t(Math.floor(x/10))+' puluh '+t(x%10):x<200?'seratus '+t(x-100):x<1000?t(Math.floor(x/100))+' ratus '+t(x%100):x<2000?'seribu '+t(x-1000):x<1e6?t(Math.floor(x/1000))+' ribu '+t(x%1000):x<1e9?t(Math.floor(x/1e6))+' juta '+t(x%1e6):x<1e12?t(Math.floor(x/1e9))+' miliar '+t(x%1e9):t(Math.floor(x/1e12))+' triliun '+t(x%1e12);
+ const w=(t(n).replace(/\s+/g,' ').trim()||'nol')+' rupiah';return w[0].toUpperCase()+w.slice(1)}
+
+/* ---------- Harga ---------- */
+const hk=id=>Array.isArray(R[id].p)?id+'@'+S.I.kualitas:id;
+const basePrice=id=>{const p=R[id].p;return Math.round((Array.isArray(p)?p[QI[S.I.kualitas]]:p)*(num(S.I.idx)||1))};
+const price=id=>{const o=S.hp[hk(id)];return o!=null?o:basePrice(id)};
+let HC={};
+function hsp(k){if(HC[k]!=null)return HC[k];let t=0;for(const[r,c]of Object.entries(A[k].r))t+=c*(r[0]=='@'?hsp(r.slice(1)):price(r));return HC[k]=Math.round(t)}
+function need(k,q,acc){for(const[r,c]of Object.entries(A[k].r)){if(r[0]=='@')need(r.slice(1),q*c,acc);else acc[r]=(acc[r]||0)+q*c}return acc}
+
+/* ---------- Perhitungan volume ---------- */
+function hitung(){
+ const I=S.I,n=x=>Math.max(0,num(x));
+ const P=n(I.P),L=n(I.L),lt=+I.lantai==2?2:1,h=n(I.tinggi),kt=Math.round(n(I.kt)),km=Math.round(n(I.km)),ter=n(I.teras),peil=n(I.peil);
+ const f2=lt==2?Math.min(1,Math.max(.1,n(I.pct2)/100)):0;
+ const A1=P*L,A2=A1*f2,At=A1+A2;
+ const K1=2*(P+L),K2=K1*Math.sqrt(f2);
+ const dIn=n(I.dalam),Ld1=dIn>0?dIn*A1/At:.38*A1,Ld2=dIn>0?dIn*A2/At:.38*A2;
+ const Lw1=K1+Ld1,Lw2=K2+Ld2;
+ const nPu=1,nPk=kt+1,nPkm=km,nJ=kt+Math.ceil(At/25),nV=nJ+nPu;
+ const Ob=nPu*2.64+nPk*1.94+nPkm*1.58+nJ*1.3+nV*.24, ObExt=nPu*2.64+1.94+nJ*1.3+nV*.24;
+ const t30=Math.tan(Math.PI/6),c30=Math.cos(Math.PI/6);
+ const Wt=lt==2?L*Math.sqrt(f2):L, gable=I.bentuk=='pelana'?Wt*Wt*t30/2:0;
+ const Ag=(Lw1+Lw2)*h+gable, An=Math.max(0,Ag-Ob), Aext=Math.max(0,(K1+K2)*h+gable-ObExt), Aint=Math.max(0,2*An-Aext);
+ const kmA=km*3,kmW=km*11+3, Apl=At+ter;
+ const Pp=P+1.2,W=L+1.2,Af=Pp*W+ter,Ar=Af/c30,hw=W/2,hip=Math.sqrt(2*hw*hw+(hw*t30)**2);
+ const bub=I.bentuk=='pelana'?Pp:Math.max(0,Pp-W)+4*hip, lis=I.bentuk=='pelana'?2*Pp+4*hw/c30:2*(Pp+W);
+ const nks=lt==2?Math.ceil(Lw1/4)+4:0, nks2=lt==2?Math.min(nks,Math.ceil(Lw2/4)+4):0;
+ const nkp1=Math.max(0,Math.ceil(Lw1/3)+4-nks), nkp2=lt==2?Math.max(0,Math.ceil(Lw2/3)+4-nks2):0;
+ const pd=lt==2?{b:.9,d:.95,t:.3,bw:.7,hp:.75}:{b:.8,d:.8,t:.25,bw:.6,hp:.6};
+ const Lp=Lw1, vGal=Lp*pd.b*pd.d, vPs=Lp*pd.b*.05, vAan=Lp*pd.bw*.15, vBk=Lp*(pd.t+pd.bw)/2*pd.hp;
+ const vGalF=nks*1.4*1.4*1.2, vFp=nks*.25, vUrK=Math.max(0,vGal+vGalF-(vPs+vAan+vBk+vFp));
+ const bln=Math.max(3,Math.round(2+At/30));
+ const nL=Math.ceil(At/8)+Math.ceil(ter/8)+2, nS=Math.ceil(At/12)+2;
+ const plintL=Math.max(0,K1+2*Ld1+K2+2*Ld2-(nPu+2*nPk+nPkm)*.9);
+ const D={P,L,lt,h,kt,km,ter,peil,A1,A2,At,K1,K2,Ld1,Ld2,Lw1,Lw2,nPu,nPk,nPkm,nJ,nV,Ob,An,Aext,Aint,gable,kmA,kmW,Apl,Af,Ar,bub,lis,nks,nks2,nkp1,nkp2,pd,Lp,bln,nL,nS,plintL};
+
+ const G=[];let g;const d=dec;
+ const grp=n=>{g={n,it:[]};G.push(g)};
+ const it=(key,an,v,f,name)=>{const o=S.ov[key];if(v>0||o!=null)g.it.push({key,an,n:name||A[an].n,auto:+v.toFixed(2),v:o!=null?o:+v.toFixed(2),f,ov:o!=null})};
+
+ grp('PEKERJAAN PERSIAPAN');
+ it('bersih','bersih',(P+4)*(L+4),`(${d(P)}+4) × (${d(L)}+4)`);
+ it('bouwplank','bouwplank',2*(P+2+L+2),`2 × (${d(P)}+2 + ${d(L)}+2)`);
+ it('gudang','gudang',1,'1 lumpsum');
+ it('airListrik','airListrik',bln,`durasi ±${bln} bulan (2 + luas/30)`);
+
+ grp('PEKERJAAN TANAH & PONDASI');
+ it('galian','galian',vGal,`${d(Lp)} m' × ${d(pd.b)} × ${d(pd.d)}`,'Galian tanah pondasi menerus');
+ if(lt==2)it('galianF','galian',vGalF,`${nks} titik × 1,4 × 1,4 × 1,2`,'Galian tanah footplat');
+ it('pasirPond','urugPasir',vPs,`${d(Lp)} × ${d(pd.b)} × 0,05`,'Urugan pasir bawah pondasi t=5 cm');
+ it('aanstamping','aanstamping',vAan,`${d(Lp)} × ${d(pd.bw)} × 0,15`);
+ it('batuKali','batuKali',vBk,`${d(Lp)} × (${d(pd.t)}+${d(pd.bw)})/2 × ${d(pd.hp)}`);
+ it('urugKembali','urugKembali',vUrK,'galian − (pasir + aanstamping + batu kali + footplat)');
+ it('urugTanah','urugTanah',A1*peil,`${d(A1)} m² × ${d(peil)}`);
+ it('pasirLantai','urugPasir',(A1+ter)*.1,`(${d(A1)} + teras ${d(ter)}) × 0,10`,'Urugan pasir bawah lantai t=10 cm');
+
+ grp('PEKERJAAN BETON BERTULANG');
+ if(lt==2)it('footplat','footplat',vFp,`${nks} titik × 1 × 1 × 0,25`);
+ it('sloof','sloof',Lp*.03,`${d(Lp)} m' × 0,15 × 0,20`);
+ if(lt==2)it('kolom20','kolom20',(nks+nks2)*h*.04,`(${nks} + ${nks2}) bh × ${d(h)} × 0,2 × 0,2`);
+ it('kolomPraktis','kolomPraktis',(nkp1+nkp2)*h*.0169,`${nkp1+nkp2} bh × ${d(h)} × 0,13 × 0,13`);
+ if(lt==2)it('balok','balok',Lw1*.07,`${d(Lw1)} m' × 0,20 × 0,35`);
+ if(lt==2)it('plat','plat',Math.max(0,A2-4)*.12,`(${d(A2)} − void tangga 4) × 0,12`);
+ if(lt==2)it('tangga','tangga',1.6,'1 tangga ± 1,6 m³');
+ it('ring','ring',(lt==2?Lw2:Lw1)*.018,`${d(lt==2?Lw2:Lw1)} m' × 0,12 × 0,15`);
+ it('rabat','beton135',(A1+ter)*.05,`(${d(A1)} + ${d(ter)}) × 0,05`,'Lantai kerja / rabat beton t=5 cm');
+
+ grp('PEKERJAAN DINDING');
+ const hb=I.dinding=='hebel';
+ it('dinding',hb?'hebel':'bata',An,`(${d(Lw1)}${lt==2?' + '+d(Lw2):''}) m' × ${d(h)}${gable?' + gevel '+d(gable):''} − bukaan ${d(Ob)}`);
+ it('plester',hb?'plesterInstan':'plester',2*An,`2 muka × ${d(An)}`);
+ it('acian',hb?'acianInstan':'acian',2*An-kmW,`2 × ${d(An)} − keramik dinding ${d(kmW)}`);
+
+ grp('PEKERJAAN LANTAI & KERAMIK');
+ it('lantai',I.lantaiFin=='granit'?'granit':'keramik',Math.max(0,At-kmA),`${d(At)} − lantai KM ${d(kmA)}`);
+ it('teras','keramik',ter,`${d(ter)} m²`,'Keramik lantai teras / carport');
+ if(lt==2)it('keramikTangga','keramik',10,'± 10 m²','Keramik tangga');
+ it('keramikKM','keramikKM',kmA,`${km} KM × 3 m²`);
+ it('keramikDinding','keramikDinding',kmW,`${km} KM × 11 m² + backsplash dapur 3 m²`);
+ it('waterproof','waterproof',km*4.2,`${km} KM × (3 + naik dinding 1,2)`);
+ it('plint','plint',plintL,'keliling dinding sisi dalam − lebar pintu');
+ it('mejaDapur','mejaDapur',2.5,'± 2,5 m\'');
+
+ grp('PEKERJAAN KUSEN, PINTU & JENDELA');
+ it('pintuUtama','pintuUtama',nPu,'1 unit');
+ it('pintuKamar','pintuKamar',nPk,`${kt} kamar + 1 pintu belakang`);
+ it('pintuKM','pintuKM',nPkm,`${km} kamar mandi`);
+ it('jendela','jendela',nJ,`${kt} kamar + ⌈${d(At)}/25⌉ ruang lain`);
+ it('bouvenlight','bouvenlight',nV,'jendela + pintu utama');
+
+ grp('PEKERJAAN ATAP');
+ it('rangka','bajaRingan',Ar,`((${d(P)}+1,2)×(${d(L)}+1,2) + teras ${d(ter)}) ÷ cos 30°`);
+ it('penutup',I.atap=='beton'?'gentengBeton':'gentengMetal',Ar,`luas atap ${d(Ar)} m²`);
+ it('bubungan',I.atap=='beton'?'bubBeton':'bubMetal',bub,I.bentuk=='pelana'?'panjang bangunan + overstek':'nok + 4 jurai');
+ it('lisplang','lisplang',lis,I.bentuk=='pelana'?'2 sisi panjang + 4 sisi miring gevel':'keliling atap');
+
+ grp('PEKERJAAN PLAFON');
+ it('plafon',I.plafon=='grc'?'plafonGRC':'plafonGypsum',Apl,`${d(At)} + teras ${d(ter)}`);
+ it('listPlafon','listPlafon',plintL+(nPu+2*nPk+nPkm)*.9,'keliling ruang sisi dalam');
+
+ grp('PEKERJAAN PENGECATAN');
+ it('catDalam','catDalam',Math.max(0,Aint-kmW),`muka dalam ${d(Aint)} − keramik dinding ${d(kmW)}`,'Cat dinding interior');
+ it('catPlafon','catDalam',Apl,`luas plafon ${d(Apl)}`,'Cat plafon');
+ it('catLuar','catLuar',Aext,`muka luar ${d(Aext)}`,'Cat dinding eksterior');
+
+ grp('PEKERJAAN SANITASI & AIR BERSIH');
+ it('closet','closet',km,`${km} KM`);
+ it('wastafel','wastafel',km,`${km} KM`);
+ it('shower','shower',km,`${km} KM`);
+ it('floorDrain','floorDrain',km+1,`${km} KM + 1 dapur`);
+ it('kran','kran',km*2+2,`${km} KM × 2 + dapur + taman`);
+ it('kitchenSink','kitchenSink',1,'1 dapur');
+ it('pipaBersih','pipaBersih',km*3+2,`${km} KM × 3 titik + 2`);
+ it('pipaKotor','pipaKotor',km+1,`${km} KM + dapur`);
+ it('septic','septic',1,'1 unit');
+ if(I.air=='pdam')it('pdam','pdam',1,'1 sambungan');
+ else{it('sumur','sumur',1,'1 titik');it('pompa','pompa',1,'1 unit')}
+ it('toren','toren',1,'1 unit');
+
+ grp('PEKERJAAN LISTRIK');
+ it('titikLampu','titikLampu',nL,`⌈${d(At)}/8⌉ + ⌈teras/8⌉ + 2 luar`);
+ it('lampu','lampu',nL,`= titik lampu`);
+ it('titikStop','titikStop',nS,`⌈${d(At)}/12⌉ + 2`);
+ it('panel','panel',lt,`${lt} lantai`);
+ it('grounding','grounding',1,'1 set');
+ it('pln','pln',+I.daya,`daya ${fmt(+I.daya)} VA`,`Penyambungan daya PLN ${fmt(+I.daya)} VA`);
+
+ grp('PEKERJAAN LAIN-LAIN');
+ if(lt==2)it('railing','railing',6,'± 6 m\'');
+ it('bersihAkhir','bersihAkhir',At+ter,`${d(At)} + ${d(ter)}`);
+
+ const ex=S.extra.filter(e=>e.n||e.v||e.h);
+ if(S.extra.length){grp('PEKERJAAN TAMBAHAN');S.extra.forEach((e,i)=>g.it.push({key:'x'+i,extra:i,n:e.n||'(tanpa nama)',u:e.u||'ls',v:num(e.v),hs:Math.round(num(e.h)),f:'input manual'}))}
+
+ HC={};
+ for(const gg of G){for(const x of gg.it){if(!x.extra){x.u=A[x.an].u;x.hs=hsp(x.an)}x.j=Math.round(x.v*x.hs)}gg.sub=gg.it.reduce((s,x)=>s+x.j,0)}
+ const jml=G.reduce((s,x)=>s+x.sub,0),jasa=Math.round(jml*num(I.jasa)/100),tt=Math.round(jml*num(I.tt)/100),dpp=jml+jasa+tt,ppn=I.ppn?Math.round(dpp*.11):0,tot=dpp+ppn,bul=Math.ceil(tot/1000)*1000;
+ const M={};for(const gg of G)for(const x of gg.it)if(!x.extra)need(x.an,x.v,M);
+ return{G,D,jml,jasa,tt,ppn,tot,bul,M,ex}
+}
+
+/* ---------- Form input ---------- */
+function renderForm(){
+ const I=S.I;let h='';
+ for(const f of FIELDS){
+  if(f.sec){h+=`<div class="sec">${f.sec}</div>`;continue}
+  if(f.show&&!f.show(I))continue;
+  if(f.t=='seg')h+=`<div class="f wide"><label>${f.l}</label><div class="seg" data-id="${f.id}">${f.o.map(o=>`<button data-v="${o[0]}" class="${String(I[f.id])==String(o[0])?'on':''}">${o[1]}</button>`).join('')}</div></div>`;
+  else if(f.t=='sel')h+=`<div class="f"><label for="i_${f.id}">${f.l}</label><select id="i_${f.id}" data-id="${f.id}">${f.o.map(o=>`<option value="${o[0]}" ${String(I[f.id])==String(o[0])?'selected':''}>${o[1]}</option>`).join('')}</select></div>`;
+  else if(f.t=='chk')h+=`<label class="chk"><input type="checkbox" data-id="${f.id}" ${I[f.id]?'checked':''}> ${f.l}</label>`;
+  else if(f.t=='text')h+=`<div class="f"><label for="i_${f.id}">${f.l}</label><input type="text" id="i_${f.id}" data-id="${f.id}" value="${esc(I[f.id])}"></div>`;
+  else h+=`<div class="f"><label for="i_${f.id}">${f.l}</label><input type="text" inputmode="decimal" id="i_${f.id}" data-id="${f.id}" value="${esc(String(I[f.id]).replace('.',','))}" style="width:86px;text-align:right"><span class="u">${f.u||''}</span></div>`;
+ }
+ h+=`<p class="hint">Angka desimal boleh pakai koma (mis. 3,5). Dinding dalam otomatis ≈ 0,38 m' per m² lantai.</p>
+ <div style="display:flex;gap:8px;margin-top:12px"><button class="btn sm" id="bReset">↺ Isi ulang default</button></div>`;
+ $('#form').innerHTML=h;
+}
+$('#form').addEventListener('input',e=>{
+ const el=e.target,id=el.dataset.id;if(!id)return;
+ const f=FIELDS.find(x=>x.id==id);
+ if(el.type=='checkbox')S.I[id]=el.checked;
+ else if(f.t=='text')S.I[id]=el.value;
+ else if(f.t=='sel'){S.I[id]=isNaN(+el.value)?el.value:+el.value;if(id=='wil'){S.I.idx=REG[+el.value][1];renderForm()}}
+ else S.I[id]=numIn(el.value);
+ update();
+});
+$('#form').addEventListener('click',e=>{
+ const b=e.target.closest('.seg button');
+ if(b){const id=b.parentNode.dataset.id;S.I[id]=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;renderForm();update();return}
+ if(e.target.id=='bReset'&&confirm('Kembalikan semua isian ke default? (harga & volume yang diubah tetap)')){S.I={...DEF};renderForm();update()}
+});
+
+/* ---------- Hasil ---------- */
+let RES;
+const TABS=[['ringkas','Ringkasan'],['rab','RAB Detail'],['material','Daftar Material & Upah'],['harga','Harga Dasar'],['analisa','Analisa Harga Satuan'],['asumsi','Asumsi & Cara Hitung']];
+function update(){RES=hitung();save();renderCards();renderView()}
+function renderCards(){
+ const r=RES,D=r.D;
+ $('#cards').innerHTML=`
+ <div class="card big"><div class="k">Total biaya (dibulatkan)</div><div class="v">${rp(r.bul)}</div></div>
+ <div class="card"><div class="k">Biaya per m² bangunan</div><div class="v">${rp(D.At?r.bul/D.At:0)}</div></div>
+ <div class="card"><div class="k">Luas bangunan</div><div class="v">${dec(D.At)} m²</div><div class="k">${D.lt} lantai · teras ${dec(D.ter)} m²</div></div>
+ <div class="card"><div class="k">Perkiraan durasi</div><div class="v">± ${D.bln} bulan</div><div class="k">${QN[S.I.kualitas]} · indeks ${dec(num(S.I.idx)||1)}</div></div>`;
+ $('#tabs').innerHTML=TABS.map(t=>`<button data-t="${t[0]}" class="${t[0]==tab?'on':''}">${t[1]}</button>`).join('');
+}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;LS.set('rab-tab',tab);renderCards();renderView()});
+
+function rekapRows(r,cls=''){
+ const I=S.I;
+ return `<tr class="st"><td></td><td>JUMLAH BIAYA PEKERJAAN</td><td class="n">${rp(r.jml)}</td></tr>
+ ${num(I.jasa)?`<tr><td></td><td>Jasa kontraktor (overhead + keuntungan) ${dec(num(I.jasa))}%</td><td class="n">${rp(r.jasa)}</td></tr>`:''}
+ ${num(I.tt)?`<tr><td></td><td>Biaya tak terduga ${dec(num(I.tt))}%</td><td class="n">${rp(r.tt)}</td></tr>`:''}
+ ${I.ppn?`<tr><td></td><td>PPN 11%</td><td class="n">${rp(r.ppn)}</td></tr>`:''}
+ <tr class="st"><td></td><td>TOTAL</td><td class="n">${rp(r.tot)}</td></tr>
+ <tr class="tot"><td></td><td>DIBULATKAN</td><td class="n">${rp(r.bul)}</td></tr>`;
+}
+function matSplit(r){const o={b:0,u:0,s:0};for(const[id,q]of Object.entries(r.M))o[R[id].k]+=q*price(id);return o}
+
+function renderView(){
+ const r=RES,D=r.D,v=$('#view');
+ if(tab=='ringkas'){
+  const ms=matSplit(r),mt=ms.b+ms.u+ms.s||1;
+  v.innerHTML=`<div class="grid2">
+  <div class="panel"><h3>Rekapitulasi biaya</h3><table>
+   <tr><th>No</th><th>Uraian</th><th class="n">Jumlah</th></tr>
+   ${r.G.map((g,i)=>`<tr><td>${ROM[i]}</td><td>${g.n}</td><td class="n">${rp(g.sub)}</td></tr>`).join('')}
+   ${rekapRows(r)}</table>
+   <div class="ter">Terbilang: ${terbilang(r.bul)}</div></div>
+  <div><div class="panel"><h3>Porsi biaya per pekerjaan</h3><div class="bars">
+   ${r.G.map(g=>{const p=r.jml?g.sub/r.jml*100:0;return`<div class="row"><div>${g.n.replace('PEKERJAAN ','').toLowerCase().replace(/^./,c=>c.toUpperCase())}</div><div class="tr"><i style="width:${Math.min(100,p*2.5)}%"></i></div><div class="n" style="text-align:right">${rpS(g.sub)}</div><div class="mute" style="text-align:right">${dec(p.toFixed(1))}%</div></div>`}).join('')}
+  </div></div>
+  <div class="panel"><h3>Komposisi biaya pekerjaan</h3><table>
+   <tr><td>Bahan / material</td><td class="n">${rp(ms.b)}</td><td class="n mute">${dec((ms.b/mt*100).toFixed(1))}%</td></tr>
+   <tr><td>Upah tenaga kerja</td><td class="n">${rp(ms.u)}</td><td class="n mute">${dec((ms.u/mt*100).toFixed(1))}%</td></tr>
+   <tr><td>Borongan / barang terpasang</td><td class="n">${rp(ms.s)}</td><td class="n mute">${dec((ms.s/mt*100).toFixed(1))}%</td></tr>
+  </table><p class="note">Daftar lengkap belanja material dan kebutuhan tukang ada di tab <b>Daftar Material & Upah</b>.</p></div></div></div>`;
+ }
+ else if(tab=='rab'){
+  let h=`<div class="panel"><table class="rab"><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Volume</th><th>Sat</th><th class="n">Harga satuan</th><th class="n">Jumlah</th></tr>`;
+  r.G.forEach((g,i)=>{
+   h+=`<tr class="g"><td>${ROM[i]}</td><td colspan="5">${g.n}</td></tr>`;
+   g.it.forEach((x,j)=>{
+    if(x.extra!=null){const e=S.extra[x.extra];
+     h+=`<tr><td>${j+1}</td><td><input class="tb" data-x="${x.extra}" data-f="n" value="${esc(e.n)}" placeholder="Nama pekerjaan"><button class="rs" data-xdel="${x.extra}">hapus</button></td>
+     <td class="n"><input class="vin" data-x="${x.extra}" data-f="v" value="${esc(String(e.v??'').replace('.',','))}"></td><td><input class="tb" style="width:56px" data-x="${x.extra}" data-f="u" value="${esc(e.u||'ls')}"></td>
+     <td class="n"><input class="pin" data-x="${x.extra}" data-f="h" value="${e.h?fmt(num(e.h)):''}"></td><td class="n">${rp(x.j)}</td></tr>`;return}
+    h+=`<tr><td>${j+1}</td><td><span class="nm" data-an="${x.key}">${esc(x.n)} ${open.has(x.key)?'▾':'▸'}</span><span class="fx">${esc(x.f)}</span></td>
+    <td class="n"><input class="vin ${x.ov?'ov':''}" data-ov="${x.key}" value="${dec(x.v)}" title="Ubah volume bila perlu">${x.ov?`<button class="rs" data-rs="${x.key}" title="Kembali ke otomatis (${dec(x.auto)})">↺</button>`:''}</td>
+    <td>${x.u}</td><td class="n">${fmt(x.hs)}</td><td class="n">${fmt(x.j)}</td></tr>`;
+    if(open.has(x.key))h+=`<tr class="an"><td></td><td colspan="5">${anTable(x.an)}</td></tr>`;
+   });
+   h+=`<tr class="st"><td></td><td colspan="4">Subtotal ${ROM[i]}</td><td class="n">${fmt(g.sub)}</td></tr>`;
+  });
+  h+=`</table><div style="margin:10px 0"><button class="btn sm" id="bAdd">＋ Tambah pekerjaan lain (pagar, kanopi, dll.)</button></div>
+  <table>${rekapRows(r)}</table><div class="ter">Terbilang: ${terbilang(r.bul)}</div>
+  <p class="note">Klik nama pekerjaan untuk melihat analisa harga satuannya. Kolom volume bisa diubah langsung (kotak oranye = diubah manual, ↺ untuk kembali ke hitungan otomatis).</p></div>`;
+  v.innerHTML=h;
+ }
+ else if(tab=='material'){
+  const rows=k=>Object.entries(r.M).filter(([id])=>R[id].k==k).sort((a,b)=>b[1]*price(b[0])-a[1]*price(a[0]));
+  const tb=(k,title,cols)=>{let s=0;const rr=rows(k).map(([id,q])=>{const t=q*price(id);s+=t;const pk=R[id].pk;
+   return`<tr><td>${R[id].n}</td><td class="n">${dec(q<10?q.toFixed(2):Math.round(q))}</td><td>${R[id].u}</td>${cols?`<td class="n mute">${pk?'± '+fmt(Math.ceil(q/pk[0]))+' '+pk[1]:''}</td>`:''}<td class="n">${fmt(price(id))}</td><td class="n">${fmt(t)}</td></tr>`}).join('');
+   return`<div class="panel"><h3>${title}</h3><table><tr><th>Uraian</th><th class="n">Kebutuhan</th><th>Sat</th>${cols?'<th class="n">Kemasan</th>':''}<th class="n">Harga</th><th class="n">Total</th></tr>${rr}<tr class="st"><td colspan="${cols?5:4}">Jumlah</td><td class="n">${rp(s)}</td></tr></table></div>`};
+  v.innerHTML=tb('b','Daftar belanja material',1)+tb('u','Kebutuhan tenaga kerja (orang-hari)',0)+tb('s','Borongan / barang terpasang',0)+
+  `<p class="note" style="margin-top:10px">Kebutuhan material sudah memasukkan faktor susut dari koefisien analisa. Kebutuhan tenaga ${fmt(Object.entries(r.M).filter(([id])=>R[id].k=='u').reduce((s,[,q])=>s+q,0))} OH ≈ ${fmt(Math.ceil(Object.entries(r.M).filter(([id])=>R[id].k=='u').reduce((s,[,q])=>s+q,0)/(D.bln*25)))} orang/hari bila dikerjakan ${D.bln} bulan.</p>`;
+ }
+ else if(tab=='harga'){
+  const used=new Set(Object.keys(r.M));
+  const sec=(k,t)=>`<div class="panel"><h3>${t}</h3><table><tr><th>Uraian</th><th>Sat</th><th class="n">Harga</th><th></th></tr>${Object.entries(R).filter(([,x])=>x.k==k).map(([id,x])=>{const o=S.hp[hk(id)]!=null;
+   return`<tr class="${used.has(id)?'':'mute'}"><td>${x.n}${Array.isArray(x.p)?` <span class="mute">(${QN[S.I.kualitas].toLowerCase()})</span>`:''}</td><td>${x.u}</td><td class="n"><input class="pin ${o?'ov':''}" data-hp="${id}" value="${fmt(price(id))}"></td><td>${o?`<button class="rs" data-hpr="${id}" title="Kembali ke ${fmt(basePrice(id))}">↺</button>`:''}</td></tr>`}).join('')}</table></div>`;
+  v.innerHTML=`<div class="panel note">Harga default = harga rata-rata × indeks wilayah (${dec(num(S.I.idx)||1)}). Ganti dengan harga toko/upah di tempat Anda; harga yang diubah ditandai oranye dan tidak ikut indeks. Barang bertanda kualitas punya harga terpisah untuk Sederhana/Menengah/Mewah. Baris abu-abu tidak dipakai di proyek ini. <button class="btn sm" id="bHpReset" style="margin-left:6px">↺ Semua harga ke default</button></div>`+sec('u','Upah tenaga kerja (per hari)')+sec('b','Bahan / material')+sec('s','Borongan / barang terpasang');
+ }
+ else if(tab=='analisa'){
+  const used=[];const add=k=>{if(used.includes(k))return;for(const r2 of Object.keys(A[k].r))if(r2[0]=='@')add(r2.slice(1));used.push(k)};
+  r.G.forEach(g=>g.it.forEach(x=>x.an&&add(x.an)));
+  v.innerHTML=`<div class="panel note">Analisa harga satuan pekerjaan (AHSP): koefisien × harga dasar. Pekerjaan beton bertulang memakai gabungan analisa beton + pembesian + bekisting.</div>`+used.map(k=>`<div class="panel"><h3>${A[k].n} <span class="mute">/ ${A[k].u}</span> — ${rp(hsp(k))}</h3>${anTable(k)}</div>`).join('');
+ }
+ else if(tab=='asumsi'){
+  const kv=(a,b)=>`<tr><td>${a}</td><td class="n">${b}</td></tr>`;
+  v.innerHTML=`<div class="grid2"><div class="panel"><h3>Hasil hitung geometri</h3><table class="kv">
+  ${kv('Luas lantai 1',dec(D.A1)+' m²')}${D.lt==2?kv('Luas lantai 2',dec(D.A2)+' m²'):''}${kv('Luas bangunan total',dec(D.At)+' m²')}
+  ${kv('Keliling dinding luar lt.1',dec(D.K1)+" m'")}${kv('Dinding dalam lt.1',dec(D.Ld1)+" m'")}${D.lt==2?kv('Keliling luar lt.2',dec(D.K2)+" m'")+kv('Dinding dalam lt.2',dec(D.Ld2)+" m'"):''}
+  ${kv('Panjang pondasi',dec(D.Lp)+" m'")}${kv('Luas bukaan pintu & jendela',dec(D.Ob)+' m²')}${D.gable?kv('Dinding gevel (segitiga atap)',dec(D.gable)+' m²'):''}
+  ${kv('Luas dinding bersih',dec(D.An)+' m²')}${kv('Muka dinding luar / dalam',dec(D.Aext)+' / '+dec(D.Aint)+' m²')}
+  ${kv('Luas atap (kemiringan 30°)',dec(D.Ar)+' m²')}${kv('Bubungan / lisplang',dec(D.bub)+' / '+dec(D.lis)+" m'")}
+  ${kv('Kolom praktis',(D.nkp1+D.nkp2)+' bh')}${D.lt==2?kv('Kolom struktur + footplat',(D.nks+D.nks2)+' bh / '+D.nks+' titik'):''}
+  ${kv('Pintu (utama/kamar/KM)',`${D.nPu} / ${D.nPk} / ${D.nPkm}`)}${kv('Jendela / bouvenlight',`${D.nJ} / ${D.nV}`)}
+  ${kv('Titik lampu / stop kontak',`${D.nL} / ${D.nS}`)}</table></div>
+  <div class="panel"><h3>Asumsi yang dipakai</h3><div class="note">
+  <p><b>Bentuk denah</b> persegi panjang P × L. Dinding dalam otomatis 0,38 m' per m² lantai (rata-rata rumah tinggal), bisa diganti di isian.</p>
+  <p><b>Pondasi</b> ${D.lt==2?'2 lantai: batu kali 30/70 tinggi 75 cm + footplat 100×100 di setiap kolom struktur (jarak ±4 m)':'1 lantai: batu kali 25/60 tinggi 60 cm, galian 80×80 cm'}, di atas aanstamping 15 cm dan pasir 5 cm.</p>
+  <p><b>Struktur</b>: sloof 15/20, kolom praktis 13/13 tiap ±3 m, ring balok 12/15${D.lt==2?', kolom 20/20, balok 20/35, plat 12 cm, tangga beton':''}. Beton K-225 aduk di lokasi. Rasio besi per m³ sudah termasuk sengkang & sambungan.</p>
+  <p><b>Bukaan</b>: pintu utama 1,2×2,2 m, pintu kamar 0,9×2,15, pintu KM 0,75×2,1, jendela 1,0×1,3, bouvenlight 0,6×0,4.</p>
+  <p><b>Atap</b> kemiringan 30°, overstek 60 cm, teras ikut beratap. ${D.gable?'Atap pelana menambah dinding gevel di kedua sisi.':''}</p>
+  <p><b>Kamar mandi</b> 3 m² lantai, dinding keramik ±11 m² per KM.</p>
+  <p><b>Durasi</b> = 2 + luas/30 bulan (minimal 3). Jasa kontraktor & tak terduga dihitung dari jumlah biaya pekerjaan; untuk swakelola isi jasa 0%.</p>
+  <p>Hasil ini estimasi awal untuk perencanaan dan negosiasi. Untuk bangunan bertingkat, tanah lunak, atau bentang besar, minta hitungan struktur dari ahli.</p></div></div></div>`;
+ }
+}
+function anTable(k){
+ let t=0;const rows=Object.entries(A[k].r).map(([r,c])=>{const sub=r[0]=='@',id=sub?r.slice(1):r,p=sub?hsp(id):price(id),j=c*p;t+=j;
+  return`<tr><td>${sub?'↳ '+A[id].n:R[id].n}</td><td class="n">${dec(+c.toFixed(4))}</td><td>${sub?A[id].u:R[id].u}</td><td class="n">${fmt(p)}</td><td class="n">${fmt(j)}</td></tr>`}).join('');
+ return`<table><tr><th>Komponen</th><th class="n">Koefisien</th><th>Sat</th><th class="n">Harga</th><th class="n">Jumlah</th></tr>${rows}<tr class="st"><td colspan="4">Harga satuan per ${A[k].u}</td><td class="n">${fmt(Math.round(t))}</td></tr></table>`;
+}
+
+$('#view').addEventListener('click',e=>{
+ const t=e.target;
+ if(t.dataset.an){const k=t.dataset.an;open.has(k)?open.delete(k):open.add(k);renderView();return}
+ if(t.dataset.rs){delete S.ov[t.dataset.rs];update();return}
+ if(t.dataset.hpr){delete S.hp[hk(t.dataset.hpr)];update();return}
+ if(t.id=='bHpReset'&&confirm('Kembalikan semua harga ke default?')){S.hp={};update();return}
+ if(t.id=='bAdd'){S.extra.push({n:'',v:1,u:'ls',h:0});update();setTimeout(()=>{const l=[...document.querySelectorAll('input[data-f="n"]')].pop();l&&l.focus()},0);return}
+ if(t.dataset.xdel!=null){S.extra.splice(+t.dataset.xdel,1);update()}
+});
+$('#view').addEventListener('change',e=>{
+ const t=e.target;
+ if(t.dataset.ov){const k=t.dataset.ov,val=numIn(t.value);let auto;RES.G.forEach(g=>g.it.forEach(x=>{if(x.key==k)auto=x.auto}));if(Math.abs(val-auto)<.005)delete S.ov[k];else S.ov[k]=val;update()}
+ else if(t.dataset.hp){const id=t.dataset.hp,val=Math.round(num(t.value));if(val==basePrice(id))delete S.hp[hk(id)];else S.hp[hk(id)]=val;update()}
+ else if(t.dataset.x!=null){const e2=S.extra[+t.dataset.x],f=t.dataset.f;e2[f]=f=='n'||f=='u'?t.value:f=='h'?num(t.value):numIn(t.value);update()}
+});
+$('#view').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.tagName=='INPUT')e.target.blur()});
+
+/* ---------- Proyek tersimpan ---------- */
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1800)}
+function projDlg(){
+ const P=LS.get('rab-projects-v1')||{};const d=$('#dlg');
+ d.innerHTML=`<h3 style="margin:0 0 10px">Proyek tersimpan</h3>
+ <div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn p" id="pSave">💾 Simpan "${esc(S.I.nama||'Tanpa nama')}"</button><button class="btn" id="pNew">＋ Proyek baru</button></div>
+ ${Object.entries(P).sort((a,b)=>b[1].t-a[1].t).map(([id,p])=>`<div class="pl"><b>${esc(p.name)}<br><span class="mute" style="font-weight:400;font-size:12px">${new Date(p.t).toLocaleString('id-ID')} · ${rp(p.total||0)}</span></b><button class="btn sm" data-po="${id}">Buka</button><button class="btn sm" data-pd="${id}">Hapus</button></div>`).join('')||'<p class="mute">Belum ada proyek tersimpan.</p>'}
+ <div style="text-align:right;margin-top:12px"><button class="btn" id="pClose">Tutup</button></div>`;
+ d.open||d.showModal();
+}
+$('#bProj').onclick=projDlg;
+$('#dlg').addEventListener('click',e=>{
+ const t=e.target,P=LS.get('rab-projects-v1')||{};
+ if(t.id=='pClose'||t===$('#dlg'))return $('#dlg').close();
+ if(t.id=='pSave'){const id=Object.keys(P).find(k=>P[k].name==(S.I.nama||'Tanpa nama'))||('p'+Date.now());P[id]={name:S.I.nama||'Tanpa nama',t:Date.now(),total:RES.bul,S:JSON.parse(JSON.stringify(S))};LS.set('rab-projects-v1',P);toast('Proyek disimpan');projDlg()}
+ if(t.id=='pNew'){S=fresh();renderForm();update();$('#dlg').close();toast('Proyek baru')}
+ if(t.dataset.po){S=JSON.parse(JSON.stringify(P[t.dataset.po].S));S.I={...DEF,...S.I};S.extra=S.extra||[];renderForm();update();$('#dlg').close();toast('Proyek dibuka')}
+ if(t.dataset.pd&&confirm('Hapus proyek "'+P[t.dataset.pd].name+'"?')){delete P[t.dataset.pd];LS.set('rab-projects-v1',P);projDlg()}
+});
+
+/* ---------- Cetak / PDF ---------- */
+$('#bPdf').onclick=()=>{
+ const r=RES,D=r.D,I=S.I;
+ let h=`<h1>RENCANA ANGGARAN BIAYA (RAB)</h1><div style="text-align:center">${esc(I.nama)}</div>
+ <table class="meta">${[['Pekerjaan',esc(I.nama)],['Pemilik',esc(I.pemilik)||'-'],['Lokasi',esc(I.lokasi)||'-'],['Luas bangunan',`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`],['Spesifikasi',`${QN[I.kualitas]}, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'}, lantai ${I.lantaiFin}, atap ${I.atap=='beton'?'genteng beton':'genteng metal'} ${I.bentuk}`],['Tanggal',new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})]].map(x=>`<tr><td>${x[0]}</td><td>: ${x[1]}</td></tr>`).join('')}</table>
+ <h2>REKAPITULASI</h2><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Jumlah (Rp)</th></tr>
+ ${r.G.map((g,i)=>`<tr><td>${ROM[i]}</td><td>${g.n}</td><td class="n">${fmt(g.sub)}</td></tr>`).join('')}${rekapRows(r)}</table>
+ <p><i>Terbilang: ${terbilang(r.bul)}</i></p>
+ <h2 class="brk">RINCIAN ANGGARAN BIAYA</h2><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Volume</th><th>Sat</th><th class="n">Harga satuan (Rp)</th><th class="n">Jumlah (Rp)</th></tr>`;
+ r.G.forEach((g,i)=>{h+=`<tr class="g"><td>${ROM[i]}</td><td colspan="5">${g.n}</td></tr>`+g.it.map((x,j)=>`<tr><td>${j+1}</td><td>${esc(x.n)}</td><td class="n">${dec(x.v)}</td><td>${x.u}</td><td class="n">${fmt(x.hs)}</td><td class="n">${fmt(x.j)}</td></tr>`).join('')+`<tr class="st"><td></td><td colspan="4">Subtotal ${ROM[i]}</td><td class="n">${fmt(g.sub)}</td></tr>`});
+ h+=`</table><h2 class="brk">DAFTAR KEBUTUHAN MATERIAL</h2><table><tr><th>Material</th><th class="n">Kebutuhan</th><th>Sat</th><th class="n">Kemasan</th></tr>`+
+ Object.entries(r.M).filter(([id])=>R[id].k=='b').sort((a,b)=>b[1]*price(b[0])-a[1]*price(a[0])).map(([id,q])=>`<tr><td>${R[id].n}</td><td class="n">${dec(q<10?q.toFixed(2):Math.round(q))}</td><td>${R[id].u}</td><td class="n">${R[id].pk?'± '+fmt(Math.ceil(q/R[id].pk[0]))+' '+R[id].pk[1]:''}</td></tr>`).join('')+
+ `</table><div class="sign"><div>Disetujui,<br><br><br><br>( ${esc(I.pemilik)||'..............................'} )<br>Pemilik</div><div>Dibuat oleh,<br><br><br><br>( .............................. )<br>Perencana / Pelaksana</div></div>`;
+ $('#print').innerHTML=h;window.print();
+};
+
+/* ---------- Ekspor Excel (dengan rumus hidup) ---------- */
+function loadXLSX(){return window.XLSX?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=ok;s.onerror=()=>no(new Error('Gagal memuat pustaka Excel (cek internet)'));document.head.appendChild(s)})}
+$('#bXls').onclick=async()=>{
+ try{await loadXLSX()}catch(e){return toast(e.message)}
+ const X=XLSX,r=RES,D=r.D,I=S.I,wb=X.utils.book_new(),NF='#,##0',NF2='#,##0.00';
+ const put=(ws,addr,v,z)=>{ws[addr]=typeof v=='object'&&v&&v.f?{t:'n',f:v.f,z}:typeof v=='number'?{t:'n',v,z}:{t:'s',v:String(v??'')}};
+ const fin=(ws,rows,cols,w)=>{ws['!ref']=X.utils.encode_range({s:{r:0,c:0},e:{r:rows,c:cols-1}});ws['!cols']=w.map(x=>({wch:x}))};
+ // Harga dasar
+ const used=Object.keys(R).filter(id=>Object.values(A).some(a=>a.r[id]!=null));
+ const wh={};let y=1;const HR={};
+ put(wh,'A1','HARGA DASAR BAHAN, UPAH & BORONGAN');put(wh,'A2',`Kualitas ${QN[I.kualitas]} · indeks wilayah ${dec(num(I.idx)||1)} — ubah kolom D, Analisa & RAB ikut berubah`);
+ y=4;['Kode','Uraian','Satuan','Harga (Rp)','Jenis'].forEach((t,c)=>put(wh,X.utils.encode_cell({r:y-1,c}),t));
+ used.forEach(id=>{y++;HR[id]=y;put(wh,'A'+y,id);put(wh,'B'+y,R[id].n);put(wh,'C'+y,R[id].u);put(wh,'D'+y,price(id),NF);put(wh,'E'+y,{u:'Upah',b:'Bahan',s:'Borongan'}[R[id].k])});
+ fin(wh,y,5,[14,46,8,14,10]);
+ // Analisa
+ const wa={},AR={};y=1;put(wa,'A1','ANALISA HARGA SATUAN PEKERJAAN');y=2;
+ const order=[];const add=k=>{if(order.includes(k))return;for(const q of Object.keys(A[k].r))if(q[0]=='@')add(q.slice(1));order.push(k)};
+ r.G.forEach(g=>g.it.forEach(x=>x.an&&add(x.an)));
+ order.forEach(k=>{y+=2;put(wa,'A'+y,A[k].n+' (per '+A[k].u+')');y++;['Komponen','Koefisien','Satuan','Harga (Rp)','Jumlah (Rp)'].forEach((t,c)=>put(wa,X.utils.encode_cell({r:y-1,c}),t));const a=y+1;
+  for(const[q,c]of Object.entries(A[k].r)){y++;const sub=q[0]=='@',id=sub?q.slice(1):q;put(wa,'A'+y,sub?'↳ '+A[id].n:R[id].n);put(wa,'B'+y,c,'0.0000');put(wa,'C'+y,sub?A[id].u:R[id].u);put(wa,'D'+y,{f:sub?`E${AR[id]}`:`'Harga Dasar'!D${HR[id]}`},NF);put(wa,'E'+y,{f:`B${y}*D${y}`},NF)}
+  y++;put(wa,'A'+y,'Harga satuan per '+A[k].u);put(wa,'E'+y,{f:`ROUND(SUM(E${a}:E${y-1}),0)`},NF);AR[k]=y});
+ fin(wa,y,5,[52,11,8,14,15]);
+ // RAB
+ const wr={};y=1;put(wr,'A1','RENCANA ANGGARAN BIAYA (RAB)');
+ [['Pekerjaan',I.nama],['Pemilik',I.pemilik||'-'],['Lokasi',I.lokasi||'-'],['Luas bangunan',`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`]].forEach((x,i)=>{put(wr,'A'+(i+2),x[0]);put(wr,'B'+(i+2),': '+x[1])});
+ y=7;['No','Uraian pekerjaan','Volume','Satuan','Harga satuan (Rp)','Jumlah (Rp)'].forEach((t,c)=>put(wr,X.utils.encode_cell({r:y-1,c}),t));
+ const subs=[];
+ r.G.forEach((g,i)=>{y++;put(wr,'A'+y,ROM[i]);put(wr,'B'+y,g.n);const a=y+1;
+  g.it.forEach((x,j)=>{y++;put(wr,'A'+y,j+1);put(wr,'B'+y,x.n);put(wr,'C'+y,x.v,NF2);put(wr,'D'+y,x.u);put(wr,'E'+y,x.an?{f:`'Analisa'!E${AR[x.an]}`}:x.hs,NF);put(wr,'F'+y,{f:`ROUND(C${y}*E${y},0)`},NF)});
+  y++;put(wr,'B'+y,'Subtotal '+ROM[i]);put(wr,'F'+y,{f:`SUM(F${a}:F${y-1})`},NF);subs.push(y)});
+ y+=2;const yJ=y;put(wr,'B'+y,'JUMLAH BIAYA PEKERJAAN');put(wr,'F'+y,{f:subs.map(s=>'F'+s).join('+')},NF);
+ y++;const yJs=y;put(wr,'B'+y,'Jasa kontraktor (%)');put(wr,'E'+y,num(I.jasa)/100,'0%');put(wr,'F'+y,{f:`ROUND(F${yJ}*E${y},0)`},NF);
+ y++;const yT=y;put(wr,'B'+y,'Biaya tak terduga (%)');put(wr,'E'+y,num(I.tt)/100,'0%');put(wr,'F'+y,{f:`ROUND(F${yJ}*E${y},0)`},NF);
+ y++;const yP=y;put(wr,'B'+y,'PPN');put(wr,'E'+y,I.ppn?.11:0,'0%');put(wr,'F'+y,{f:`ROUND((F${yJ}+F${yJs}+F${yT})*E${y},0)`},NF);
+ y++;const yTot=y;put(wr,'B'+y,'TOTAL');put(wr,'F'+y,{f:`F${yJ}+F${yJs}+F${yT}+F${yP}`},NF);
+ y++;put(wr,'B'+y,'DIBULATKAN');put(wr,'F'+y,{f:`ROUNDUP(F${yTot},-3)`},NF);
+ y++;put(wr,'B'+y,'Terbilang: '+terbilang(r.bul));
+ fin(wr,y,6,[6,52,11,8,17,18]);
+ // Material
+ const wm={};put(wm,'A1','DAFTAR KEBUTUHAN MATERIAL, UPAH & BORONGAN');y=3;['Uraian','Kebutuhan','Satuan','Kemasan','Harga (Rp)','Total (Rp)','Jenis'].forEach((t,c)=>put(wm,X.utils.encode_cell({r:y-1,c}),t));
+ Object.entries(r.M).sort((a,b)=>'bus'.indexOf(R[a[0]].k)-'bus'.indexOf(R[b[0]].k)||b[1]*price(b[0])-a[1]*price(a[0])).forEach(([id,q])=>{y++;const pk=R[id].pk;put(wm,'A'+y,R[id].n);put(wm,'B'+y,+q.toFixed(3),NF2);put(wm,'C'+y,R[id].u);put(wm,'D'+y,pk?'± '+Math.ceil(q/pk[0])+' '+pk[1]:'');put(wm,'E'+y,{f:`'Harga Dasar'!D${HR[id]}`},NF);put(wm,'F'+y,{f:`ROUND(B${y}*E${y},0)`},NF);put(wm,'G'+y,{u:'Upah',b:'Bahan',s:'Borongan'}[R[id].k])});
+ fin(wm,y,7,[46,12,8,14,14,16,10]);
+ X.utils.book_append_sheet(wb,wr,'RAB');X.utils.book_append_sheet(wb,wa,'Analisa');X.utils.book_append_sheet(wb,wm,'Material');X.utils.book_append_sheet(wb,wh,'Harga Dasar');
+ X.writeFile(wb,'RAB '+(I.nama||'Rumah').replace(/[\\/:*?"<>|]/g,'')+'.xlsx');toast('File Excel diunduh');
+};
+
+renderForm();update();
+</script>
+</body>
+</html>
