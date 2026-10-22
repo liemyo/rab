@@ -350,7 +350,7 @@ const A={
 };
 
 const REG=[['Jawa (rata-rata)',1],['Jabodetabek',1.1],['Bali & Nusa Tenggara',1.08],['Sumatera',1.05],['Kalimantan',1.15],['Sulawesi',1.1],['Maluku & Maluku Utara',1.3],['Papua',1.55]];
-const DEF={jenis:'rumah',gP:40,gL:20,gBay:6,gH:8,gSlope:15,gPeil:.3,gDin:3,gRangka:'kremona',gKolom:'auto',gRafter:'auto',gSky:5,gInsul:true,gLt:.15,gHard:true,gRD:2,gRDw:4,gRDh:5,gKM:2,nama:'Rumah Tinggal',pemilik:'',lokasi:'',P:10,L:7,lantai:1,pct2:100,tinggi:3.5,peil:.3,teras:8,kt:3,km:2,dalam:0,
+const DEF={jenis:'rumah',gP:40,gL:20,gBay:6,gH:8,gSlope:15,gPeil:.3,gDin:3,gTanah:100,gAngin:.6,gKolom:'auto',gRafter:'auto',gSky:5,gInsul:true,gLt:.15,gHard:true,gRD:2,gRDw:4,gRDh:5,gKM:2,nama:'Rumah Tinggal',pemilik:'',lokasi:'',P:10,L:7,lantai:1,pct2:100,tinggi:3.5,peil:.3,teras:8,kt:3,km:2,dalam:0,
  kualitas:'m',dinding:'bata',lantaiFin:'keramik',atap:'metal',bentuk:'pelana',plafon:'gypsum',air:'sumur',daya:2200,wil:0,idx:1,jasa:10,tt:5,ppn:false};
 
 const FIELDS=[
@@ -368,9 +368,10 @@ const FIELDS=[
  {id:'gPeil',l:'Peninggian lantai dari tanah',u:'m',g:1},
  {id:'gDin',l:'Tinggi dinding bata (sisanya galvalum)',u:'m',g:1},
  {sec:'Struktur baja',g:1},
- {id:'gRangka',l:'Kuda-kuda',t:'seg',o:[['kremona','Kremona (rangka siku)'],['baja','Baja IWF (rafter)']],g:1},
- {id:'gKolom',l:'Profil kolom IWF',t:'sel',o:[['auto','Otomatis'],['200','WF 200×100'],['250','WF 250×125'],['300','WF 300×150'],['350','WF 350×175'],['400','WF 400×200'],['450','WF 450×200'],['500','WF 500×200'],['600','WF 600×200']],g:1},
- {id:'gRafter',l:'Profil rafter IWF',t:'sel',o:[['auto','Otomatis'],['200','WF 200×100'],['250','WF 250×125'],['300','WF 300×150'],['350','WF 350×175'],['400','WF 400×200'],['450','WF 450×200'],['500','WF 500×200'],['600','WF 600×200']],g:1,show:I=>I.gRangka=='baja'},
+ {id:'gAngin',l:'Tekanan angin desain (SNI 1727)',u:'kN/m²',g:1},
+ {id:'gTanah',l:'Daya dukung tanah izin',u:'kN/m²',g:1},
+ {id:'gKolom',l:'Profil kolom IWF',t:'sel',o:[['auto','Otomatis (teringan lolos SNI)'],['150','WF 150×75'],['200','WF 200×100'],['250','WF 250×125'],['300','WF 300×150'],['350','WF 350×175'],['400','WF 400×200'],['450','WF 450×200'],['500','WF 500×200'],['600','WF 600×200'],['588','WF 588×300'],['700','WF 700×300'],['800','WF 800×300'],['900','WF 900×300']],g:1},
+ {id:'gRafter',l:'Profil rafter IWF',t:'sel',o:[['auto','Otomatis (teringan lolos SNI)'],['150','WF 150×75'],['200','WF 200×100'],['250','WF 250×125'],['300','WF 300×150'],['350','WF 350×175'],['400','WF 400×200'],['450','WF 450×200'],['500','WF 500×200'],['600','WF 600×200'],['588','WF 588×300'],['700','WF 700×300'],['800','WF 800×300'],['900','WF 900×300']],g:1},
  {sec:'Atap, lantai & pintu',g:1},
  {id:'gSky',l:'Skylight (atap transparan)',u:'% atap',g:1},
  {id:'gInsul',l:'Insulasi aluminium foil di bawah atap',t:'chk',g:1},
@@ -823,7 +824,7 @@ function spek(R){
 
 /* ---------- Perhitungan volume ---------- */
 const infoLuas=D=>D.gd?`${dec(D.At)} m² (gudang ${dec(D.L)} × ${dec(D.P)} m, tinggi kolom ${dec(D.H)} m, ${D.nP} portal)`:`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`;
-const infoSpek=D=>{const I=S.I;return D.gd?`${QN[I.kualitas]}, kolom ${WFT[D.ck][0]}, kuda-kuda ${D.krem?'kremona 2'+SKU[D.chk][0]:WFT[D.rk][0]}, atap spandek ${D.deg}°, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'} ${dec(D.hDin)} m + galvalum, lantai beton K-300 ${Math.round(D.lt_*100)} cm`:`${QN[I.kualitas]}, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'}, lantai ${I.lantaiFin}, atap ${I.atap=='beton'?'genteng beton':'genteng metal'} ${I.bentuk}, plafon ${I.plafon}`};
+const infoSpek=D=>{const I=S.I;return D.gd?`${QN[I.kualitas]}, kolom ${WFT[D.ck][0]}, rafter ${WFT[D.rk][0]}, atap spandek ${D.deg}°, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'} ${dec(D.hDin)} m + galvalum, lantai beton K-300 ${Math.round(D.lt_*100)} cm`:`${QN[I.kualitas]}, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'}, lantai ${I.lantaiFin}, atap ${I.atap=='beton'?'genteng beton':'genteng metal'} ${I.bentuk}, plafon ${I.plafon}`};
 function hitung(){
  if(S.I.jenis=='gudang')return hitungGudang();
  const I=S.I,n=x=>Math.max(0,num(x));
@@ -958,12 +959,11 @@ function hitung(){
  return{G,D,jml,jasa,tt,ppn,tot,bul,M,ex}
 }
 
-/* ---------- Gudang / pabrik: struktur baja IWF, kuda-kuda kremona atau IWF, gording & regel CNP ----------
+/* ---------- Gudang / pabrik: portal baja IWF (kolom + rafter dengan haunch), gording & regel CNP ----------
    Koordinat denah: x sepanjang bangunan (0..P, portal 1..n), y melintang bentang (0..L, as A–B).
    Dimensi profil adalah pra-rencana (rule of thumb bentang/jarak portal) untuk estimasi biaya; desain final wajib dihitung ahli struktur. */
 Object.assign(R,{
  wf:{n:'Baja profil IWF / WF',u:'kg',p:15500,k:'b'},
- siku:{n:'Baja siku (L) rangka kremona',u:'kg',p:15800,k:'b'},
  cnp:{n:'Baja CNP / kanal C (gording & regel)',u:'kg',p:16500,k:'b'},
  rod:{n:'Besi bulat (ikatan angin & trekstang)',u:'kg',p:14500,k:'b'},
  platBaja:{n:'Plat baja (base plate, buhul, pengaku)',u:'kg',p:16000,k:'b'},
@@ -999,7 +999,6 @@ Object.assign(A,{
  plastik:{n:'Plastik cor bawah lantai',u:'m²',r:{plastikCor:1.1,pekerja:.01}},
  hardener:{n:'Floor hardener + trowel',u:'m²',r:{hardener:1}},
  bajaWF:{n:'Fabrikasi & ereksi baja IWF',u:'kg',r:{wf:1.05,platBaja:.07,elektroda:.015,bautHTB:.012,crane:1,...L4(.02,.02,.002,.001)}},
- bajaSiku:{n:'Fabrikasi & ereksi rangka kremona profil siku',u:'kg',r:{siku:1.05,platBaja:.12,elektroda:.025,bautHTB:.01,crane:1,...L4(.025,.025,.0025,.001)}},
  bajaCNP:{n:'Pasang gording / regel CNP',u:'kg',r:{cnp:1.05,bautHTB:.02,platBaja:.03,...L4(.012,.012,.0012,.0006)}},
  bajaRod:{n:'Pasang ikatan angin & trekstang',u:'kg',r:{rod:1.05,platBaja:.1,bautHTB:.05,...L4(.02,.02,.002,.001)}},
  catBaja:{n:'Pengecatan baja (1 primer + 2 finish)',u:'m²',r:{catMenie:.12,catBesi:.2,thinner:.05,...L4(.02,.05,.005,.0025)}},
@@ -1016,55 +1015,84 @@ Object.assign(A,{
  turbin:{n:'Turbin ventilator',u:'unit',r:{turbin:1}},
  highbay:{n:'Lampu highbay LED + instalasi',u:'titik',r:{highbay:1}},
 });
-// [nama, kg/m, keliling cat m²/m, tinggi mm, lebar mm]
-const WFT={'200':['WF 200×100×5,5×8',21.3,.775,200,100],'250':['WF 250×125×6×9',29.6,.968,250,125],'300':['WF 300×150×6,5×9',36.7,1.17,300,150],'350':['WF 350×175×7×11',49.6,1.37,350,175],
- '400':['WF 400×200×8×13',66,1.57,400,200],'450':['WF 450×200×9×14',76,1.67,450,200],'500':['WF 500×200×10×16',89.6,1.77,500,200],'600':['WF 600×200×11×17',106,1.97,600,200]};
-const SKU={'50':['L 50×50×5',3.77,.2],'60':['L 60×60×6',5.42,.24],'70':['L 70×70×7',7.38,.28],'80':['L 80×80×8',9.66,.32],'90':['L 90×90×9',12.2,.36]};
-const CNPT={'125':['C 125×50×20×2,3',4.51,.5],'150':['C 150×50×20×2,3',5.5,.56],'150t':['C 150×65×20×3,2',7.51,.62]};
-const WFK=Object.keys(WFT),up=(k,n=1)=>WFK[Math.min(WFK.length-1,WFK.indexOf(k)+n)];
 const TLG={bersih:[0,.03],bouwplank:[0,.04],gudang:[0,.04],airListrik:[0,1],galianF:[.03,.1],galianS:[.06,.12],lkF:[.06,.11],footplat:[.07,.15],pedestal:[.1,.18],angkur:[.12,.18],urugKembali:[.15,.2],
- sloof:[.12,.22],urugTanah:[.18,.25],fabrikasi:[.04,.3],kolomWF:[.25,.36],kolomAngin:[.3,.38],rafter:[.3,.42],kremona:[.3,.42],gording:[.38,.48],ikatan:[.38,.48],regel:[.42,.52],catBaja:[.2,.55],
+ sloof:[.12,.22],urugTanah:[.18,.25],fabrikasi:[.04,.3],kolomWF:[.25,.36],kolomAngin:[.3,.38],rafter:[.3,.42],gording:[.38,.48],ikatan:[.38,.48],regel:[.42,.52],catBaja:[.2,.55],
  spandek:[.45,.58],sky:[.5,.58],insul:[.45,.56],nok:[.55,.6],talang:[.55,.62],pipaTalang:[.58,.64],turbin:[.58,.65],dinding:[.3,.5],kolomPraktis:[.3,.48],ring:[.45,.52],plester:[.48,.62],acian:[.58,.68],clad:[.52,.66],
  pasirLantai:[.55,.6],plastik:[.58,.62],wiremesh:[.58,.66],lantai:[.6,.74],hardener:[.62,.76],rollingDoor:[.72,.86],pintuBesi:[.74,.84],catLuar:[.78,.92],catDalam:[.78,.92],
  septic:[.2,.3],pipaKotor:[.25,.35],pipaBersih:[.35,.5],sumur:[.05,.15],pompa:[.1,.15],toren:[.7,.78],closet:[.82,.92],wastafel:[.82,.92],floorDrain:[.7,.78],kran:[.85,.94],pdam:[.8,.9],
  highbay:[.66,.86],titikStop:[.55,.72],panel:[.7,.8],grounding:[.66,.74],pln:[.84,.96],bersihAkhir:[.95,1]};
 
+// [nama, kg/m, keliling cat m²/m, d mm, b mm, A cm², Ix cm⁴, Sx cm³, rx cm, ry cm, tw mm]
+const WFT={'150':['WF 150×75×5×7',14,.6,150,75,17.85,666,88.8,6.11,1.66,5],'200':['WF 200×100×5,5×8',21.3,.775,200,100,27.16,1840,184,8.24,2.22,5.5],'250':['WF 250×125×6×9',29.6,.968,250,125,37.66,4050,324,10.4,2.79,6],
+ '300':['WF 300×150×6,5×9',36.7,1.17,300,150,46.78,7210,481,12.4,3.29,6.5],'350':['WF 350×175×7×11',49.6,1.37,350,175,63.14,13600,775,14.7,3.95,7],'400':['WF 400×200×8×13',66,1.57,400,200,84.12,23700,1190,16.8,4.54,8],
+ '450':['WF 450×200×9×14',76,1.67,450,200,96.76,33500,1490,18.6,4.4,9],'500':['WF 500×200×10×16',89.6,1.77,500,200,114.2,47800,1910,20.5,4.33,10],'600':['WF 600×200×11×17',106,1.97,600,200,134.4,77600,2590,24,4.12,11],
+ '588':['WF 588×300×12×20',151,2.18,588,300,192.5,118000,4020,24.8,6.85,12],'700':['WF 700×300×13×24',185,2.39,700,300,235.5,201000,5760,29.3,6.78,13],'800':['WF 800×300×14×26',210,2.59,800,300,267.4,292000,7290,33,6.62,14],'900':['WF 900×300×16×28',243,2.78,900,300,309.8,411000,9140,36.4,6.39,16]};
+// [nama, kg/m, keliling cat m²/m, Ix cm⁴, Sx cm³, Sy cm³] urut dari teringan
+const CNPT={'100':['C 100×50×20×2,3',4.06,.4,80.7,16.1,6.06],'125':['C 125×50×20×2,3',4.51,.5,137,21.9,6.22],'150':['C 150×50×20×2,3',4.96,.55,210,28,6.33],'125t':['C 125×50×20×3,2',6.13,.5,181,29,8.02],
+ '150t':['C 150×50×20×3,2',6.76,.55,280,37.4,8.19],'150w':['C 150×65×20×3,2',7.51,.62,332,44.3,12.2],'200':['C 200×75×20×3,2',9.27,.75,716,71.6,16.6]};
+const WFK=Object.keys(WFT);
+/* Desain pra-rencana SNI 1727:2020 (beban) & SNI 1729:2020 (LRFD, BJ 37 Fy 240 MPa): pilih profil teringan dengan rasio ≤ 1.
+   Portal sendi-sendi: momen sudut M = wL²/(4(2k+3)), k = (Ir/Ic)(H/L); rafter diberi haunch L/10 di sudut. Satuan kN, m. */
+function desainGudang(I,L,H,bay,th,nW,wy){
+ const Fy=240e3,E=2e8,cs=Math.cos(th),sn=Math.sin(th),pw=Math.max(.3,num(I.gAngin)||.6),qd=.05+(I.gInsul?.02:0)+.03,s=1.2,nS=bay>6?2:1,sg=Math.max(50,num(I.gTanah)||100);
+ const Zx=w=>1.12*w[7]*1e-6,out={chk:[],pw,qd,sg,nS};
+ const pick=(T,f)=>{const ks=Object.keys(T).sort((a,b)=>T[a][1]-T[b][1]);for(const k of ks){const r=f(T[k]);if(r.ok)return[k,r]}const k=ks[ks.length-1];return[k,f(T[k])]};
+ // gording: 1,2D + 1,6Lr (Lr 0,96 kN/m² proyeksi) atau beban pekerja 1 kN di tengah bentang; trekstang membagi sumbu lemah
+ [out.gk,out.rg]=pick(CNPT,c=>{const wD=qd*s+c[1]*.00981,wL=.96*s*cs,wu=1.2*wD+1.6*wL,Mx=Math.max(wu*cs*bay*bay/8,1.2*wD*cs*bay*bay/8+1.6*bay/4),My=wu*sn*(bay/(nS+1))**2/8;
+  const r=Mx/(.9*Fy*c[4]*1e-6)+My/(.9*Fy*c[5]*1e-6),dl=5*(wD+wL)*cs*bay**4/(384*E*c[3]*1e-8)/(bay/240);return{ok:r<=1&&dl<=1,r,dl,txt:`Mu ${fmt(Mx,2)} kN·m, lentur ${fmt(r,2)}, lendutan ${fmt(dl,2)}`}});
+ // regel: 1,0W (tekanan angin desain) jarak 1,5 m, sumbu lemah memikul dinding galvalum + berat sendiri
+ [out.rgk,out.rr]=pick(CNPT,c=>{const w=pw*1.5,Mx=w*bay*bay/8,My=1.2*(.05*1.5+c[1]*.00981)*(bay/(nS+1))**2/8,r=Mx/(.9*Fy*c[4]*1e-6)+My/(.9*Fy*c[5]*1e-6),dl=5*.6*w*bay**4/(384*E*c[3]*1e-8)/(bay/180);
+  return{ok:r<=1&&dl<=1,r,dl,txt:`Mu ${fmt(Mx,2)} kN·m, lentur ${fmt(r,2)}, lendutan ${fmt(dl,2)}`}});
+ // kolom angin dinding ujung: 1,0W, tumpuan sendi di sloof & rafter
+ const hw=nW?H+Math.max(...wy.map(y=>Math.min(y,L-y)))*Math.tan(th):0,trib=L/(nW+1);
+ if(nW)[out.wk,out.wr]=pick(WFT,w=>{const q=pw*trib,M=q*hw*hw/8,r=M/(.9*Fy*Zx(w)),dl=5*.6*q*hw**4/(384*E*w[6]*1e-8)/(hw/240);return{ok:r<=1&&dl<=1,r,dl,txt:`tinggi ${fmt(hw,2)} m, Mu ${fmt(M,1)} kN·m, lentur ${fmt(r,2)}, lendutan ${fmt(dl,2)}`}});
+ else out.wk='200';
+ // portal
+ const gKg=CNPT[out.gk][1]*.00981/s,wLf=.58*bay;
+ const cek=(c,rf)=>{const wD=(qd/cs+gKg/cs)*bay+rf[1]*.00981/cs+.1,wu=1.2*wD+1.6*wLf,ws=wD+wLf,k=rf[6]/c[6]*H/L,Mb=w=>w*L*L/(4*(2*k+3));
+  const Mr=Math.max(wu*L*L/8-Mb(wu),Math.abs(Mb(wu)-.045*wu*L*L)),rR=Mr/(.9*Fy*Zx(rf)),rV=wu*L/2/(.9*.6*Fy*rf[3]*rf[10]*1e-6);
+  const df=w=>(5*w*L**4/384-Mb(w)*L*L/8)/(E*rf[6]*1e-8),dl=Math.max(df(wLf)/(L/180),df(ws)/(L/120));
+  const Pu=wu*L/2+1.2*c[1]*.00981*H,Mw=pw*bay*H*H/4,Mc=Math.max(Mb(wu),Mb(1.2*wD+.5*wLf)+Mw);
+  const lx=2*H/(c[8]*1e-2),ly=1.5/(c[9]*1e-2),la=Math.max(lx,ly),Fe=Math.PI**2*E/la**2,Fcr=Fy/Fe<=2.25?Math.pow(.658,Fy/Fe)*Fy:.877*Fe,phP=.9*Fcr*c[5]*1e-4;
+  const Mp=Fy*Zx(c),Lp=1.76*c[9]*1e-2*Math.sqrt(E/Fy),Lr=3.2*Lp,Mn=1.5<=Lp?Mp:Math.max(.7*Fy*c[7]*1e-6,Mp-(Mp-.7*Fy*c[7]*1e-6)*(1.5-Lp)/(Lr-Lp)),pr=Pu/phP,mr=Mc/(.9*Mn),rC=pr>=.2?pr+8/9*mr:pr/2+mr;
+  return{ok:rR<=1&&rV<=1&&dl<=1&&rC<=1,rR,rV,dl,rC,Mr,Mc,Pu,wu,ws,Mb:Mb(wu),Pser:ws*L/2+c[1]*.00981*H}};
+ let best=null;
+ for(const ck of WFK)for(const rk of WFK){const r=cek(WFT[ck],WFT[rk]);if(!r.ok)continue;const kg=2*H*WFT[ck][1]+L/cs*WFT[rk][1]*1.1;if(!best||kg<best.kg-1e-6)best={ck,rk,kg,r}}
+ if(!best)best={ck:'900',rk:'900'};
+ if(I.gKolom&&WFT[I.gKolom])best.ck=String(I.gKolom);if(I.gRafter&&WFT[I.gRafter])best.rk=String(I.gRafter);
+ const R0=cek(WFT[best.ck],WFT[best.rk]);Object.assign(out,{ck:best.ck,rk:best.rk,pr:R0,manual:!!(WFT[I.gKolom]||WFT[I.gRafter])});
+ const B=Math.max(1,Math.ceil(Math.sqrt(R0.Pser*1.1/sg)*10-1e-9)/10),tf=Math.max(.3,Math.ceil(B*.25*20-1e-9)/20),ped=Math.max(.35,Math.ceil((WFT[best.ck][3]/1000+.15)*20-1e-9)/20);
+ Object.assign(out,{B,tf,ped});
+ const C=WFT[out.ck],Rf=WFT[out.rk],ok=x=>x<=1?'OK':'TIDAK OK';
+ out.chk=[[`Rafter ${Rf[0]} — lentur`,R0.rR,`Mu ${fmt(R0.Mr,1)} kN·m (wu ${fmt(R0.wu,2)} kN/m, 1,2D+1,6Lr)`],[`Rafter ${Rf[0]} — geser`,R0.rV,`Vu ${fmt(R0.wu*L/2,1)} kN`],[`Rafter ${Rf[0]} — lendutan`,R0.dl,`Lr ≤ L/180, D+Lr ≤ L/120 (atap tanpa plafon)`],
+  [`Kolom ${C[0]} — aksial + lentur (H1)`,R0.rC,`Pu ${fmt(R0.Pu,1)} kN, Mu ${fmt(R0.Mc,1)} kN·m (gravitasi / 1,2D+1,0W+0,5Lr), K=2,0`],
+  [`Gording ${CNPT[out.gk][0]}`,Math.max(out.rg.r,out.rg.dl),out.rg.txt],[`Regel ${CNPT[out.rgk][0]}`,Math.max(out.rr.r,out.rr.dl),out.rr.txt],
+  ...(nW?[[`Kolom angin ${WFT[out.wk][0]}`,Math.max(out.wr.r,out.wr.dl),out.wr.txt]]:[]),
+  [`Footplat ${Math.round(B*100)}×${Math.round(B*100)} cm`,R0.Pser*1.1/(B*B)/sg,`P layan ${fmt(R0.Pser,1)} kN (+10% berat pondasi) ÷ luas ≤ daya dukung ${fmt(sg)} kN/m²`]].map(([n,r,t])=>({n,r,t,ok:ok(r)}));
+ return out;
+}
 function gudangGeo(I){
  const n=x=>Math.max(0,num(x)),P=Math.max(6,n(I.gP)),L=Math.max(6,n(I.gL)),H=Math.max(3,n(I.gH)),th=clamp(n(I.gSlope)||15,5,35)*Math.PI/180,tn=Math.tan(th),cs=Math.cos(th);
  const nP=Math.max(2,Math.ceil(P/Math.max(3,n(I.gBay)||6)-1e-9)+1),bay=P/(nP-1),xs=Array.from({length:nP},(_,i)=>i*bay),hDin=clamp(n(I.gDin),0,H),peak=H+L/2*tn,peil=n(I.gPeil);
- const krem=I.gRangka!='baja';
- let rk=L<=12?'250':L<=16?'300':L<=20?'350':L<=26?'400':L<=32?'450':L<=38?'500':'600';if(bay>6.5)rk=up(rk);
- let ck=krem?(H<=5?'200':H<=7?'250':H<=9?'300':H<=12?'350':'400'):rk;if(krem&&L>25)ck=up(ck);if(!krem&&H>9)ck=up(ck);
- if(I.gKolom&&WFT[I.gKolom])ck=I.gKolom;if(I.gRafter&&WFT[I.gRafter])rk=I.gRafter;
- let chk=L<=15?'60':L<=22?'70':L<=30?'80':'90';if(bay>6.5&&chk!='90')chk=String(+chk+10);const wbk=L<=18?'50':'60';
- const gk=bay<=5?'125':bay<=6.5?'150':'150t',rgk=bay<=6?'125':'150',wk=H<=8?'200':'250';
- // kremona: rangka segitiga, tinggi di tumpuan hs, panel ±1,8 m (pola Pratt)
- const hs=Math.max(.6,L/40),N=2*Math.max(2,Math.ceil(L/2/1.8)),pw=L/N,tz=x=>hs+Math.min(x,L-x)*tn;
- const TR={hs,N,pw,nodes:Array.from({length:N+1},(_,i)=>[i*pw,tz(i*pw)]),mem:[]};
- for(let i=0;i<N;i++){const a=i*pw,b=(i+1)*pw;TR.mem.push(['b',a,0,b,0],['t',a,tz(a),b,tz(b)]);if(i>0)TR.mem.push(['v',a,0,a,tz(a)]);TR.mem.push(i<N/2?['d',a,tz(a),b,0]:['d',a,0,b,tz(b)])}
- TR.mem.push(['v',0,0,0,hs],['v',L,0,L,hs]);
- const mlen=t=>TR.mem.filter(m=>m[0]==t).reduce((s,m)=>s+Math.hypot(m[3]-m[1],m[4]-m[2]),0);
- TR.chord=mlen('b')+mlen('t');TR.web=mlen('v')+mlen('d');
  const nW=Math.max(0,Math.ceil(L/6-1e-9)-1),wy=Array.from({length:nW},(_,i)=>(i+1)*L/(nW+1));
+ const DS=desainGudang(I,L,H,bay,th,nW,wy),{ck,rk,gk,rgk,wk,B,tf,ped}=DS;
  const nRD=Math.max(0,Math.round(n(I.gRD))),dw=clamp(n(I.gRDw)||4,1,L-1),dh=clamp(n(I.gRDh)||5,2,H-.3),doors=[];
  for(let i=0;i<nRD;i++){if(i==0)doors.push({side:'x0',c:L/2});else if(i==1)doors.push({side:'xP',c:L/2});else{const k=i-2,bi=Math.floor((k/2+.5)*(nP-1)/(Math.ceil((nRD-2)/2)+1))||1;doors.push({side:k%2?'y0':'yL',c:clamp((bi+.5)*bay,dw/2+.2,P-dw/2-.2)})}}
- const pdoors=[{side:'y0',c:Math.min(bay/2,P/4)},{side:'y0',c:P-Math.min(bay/2,P/4)}];
- const B=L<=15?1.2:L<=25?1.5:L<=35?1.8:2,tf=L<=15?.3:L<=25?.35:L<=35?.4:.45,ped=L<=20?.4:.5,Df=1.5;
- return{P,L,H,th,tn,cs,deg:Math.round(th*180/Math.PI),nP,bay,xs,hDin,peak,peil,krem,ck,rk,chk,wbk,gk,rgk,wk,TR,nW,wy,nRD,dw,dh,doors,pdoors,B,tf,ped,Df,Ls:(L/2+.5)/cs};
+ const pdoors=[{side:'y0',c:Math.min(bay/2,P/4)},{side:'y0',c:P-Math.min(bay/2,P/4)}],Df=1.5;
+ return{P,L,H,th,tn,cs,deg:Math.round(th*180/Math.PI),nP,bay,xs,hDin,peak,peil,ck,rk,gk,rgk,wk,DS,nW,wy,nRD,dw,dh,doors,pdoors,B,tf,ped,Df,Ls:(L/2+.5)/cs};
 }
 
 function hitungGudang(){
- const I=S.I,g0=gudangGeo(I),{P,L,H,cs,tn,nP,bay,hDin,peil,krem,TR,nW,B,tf,ped,Df}=g0,d=dec,At=P*L,per=2*(P+L);
- const W=WFT,C=W[g0.ck],Rf=W[g0.rk],Wa=W[g0.wk],Ch=SKU[g0.chk],Wb=SKU[g0.wbk],Gd=CNPT[g0.gk],Rg=CNPT[g0.rgk];
+ const I=S.I,g0=gudangGeo(I),{P,L,H,cs,tn,nP,bay,hDin,peil,nW,B,tf,ped,Df}=g0,d=dec,At=P*L,per=2*(P+L);
+ const W=WFT,C=W[g0.ck],Rf=W[g0.rk],Wa=W[g0.wk],Gd=CNPT[g0.gk],Rg=CNPT[g0.rgk];
  // berat baja
- const kgKol=nP*2*H*C[1],raf=2*(L/2)/cs,kgRaf=krem?0:nP*raf*Rf[1]*1.1;
- const kgTruss=krem?nP*(TR.chord*2*Ch[1]+TR.web*Wb[1])*1.1:0;
+ const kgKol=nP*2*H*C[1],raf=2*(L/2)/cs,kgRaf=nP*raf*Rf[1]*1.1;
  const hW=g0.wy.reduce((s,y)=>s+H+Math.min(y,L-y)*tn,0)*2,kgAng=hW*Wa[1];
  const nG=Math.ceil(g0.Ls/1.2)+1,lG=2*nG*(P+1)*1.05,kgG=lG*Gd[1];
  const nR=Math.max(1,Math.ceil((H-hDin)/1.5-1e-9)),lR=nR*per*1.05,kgR=lR*Rg[1];
- const nb=P>=48?3:2,kSag=bay>6?2:1,lSag=(nP-1)*2*kSag*g0.Ls,lIA=nb*(8*Math.hypot(bay,g0.Ls/2)+4*Math.hypot(bay,H)),kgRod=lSag*.888+lIA*1.58;
- const aCat=nP*2*H*C[2]+(krem?nP*(TR.chord*2*Ch[2]+TR.web*Wb[2]):nP*raf*Rf[2]*1.1)+hW*Wa[2]+lG*Gd[2]+lR*Rg[2];
- const kgTot=kgKol+kgRaf+kgTruss+kgAng+kgG+kgR+kgRod;
+ const nb=P>=48?3:2,kSag=g0.DS.nS,lSag=(nP-1)*2*kSag*g0.Ls,lIA=nb*(8*Math.hypot(bay,g0.Ls/2)+4*Math.hypot(bay,H)),kgRod=lSag*.888+lIA*1.58;
+ const aCat=nP*2*H*C[2]+nP*raf*Rf[2]*1.1+hW*Wa[2]+lG*Gd[2]+lR*Rg[2];
+ const kgTot=kgKol+kgRaf+kgAng+kgG+kgR+kgRod;
  // pondasi
  const nK=2*nP,nKW=2*nW,hPed=Df-tf+peil,vFp=nK*B*B*tf+nKW*1*1*.3,vPed=nK*ped*ped*hPed+nKW*.3*.3*hPed;
  const vGalF=nK*(B+.4)**2*Df+nKW*1.4*1.4*Df,vLk=(nK*B*B+nKW)*.05,vSl=per*.2*.3,vGalS=per*.4*.5;
@@ -1076,7 +1104,7 @@ function hitungGudang(){
  const Ar=(P+1)*(L+1)/cs,sky=Ar*clamp(num(I.gSky),0,30)/100,nDP=2*(Math.ceil((P+1)/12)+1);
  const lt=clamp(num(I.gLt)||.15,.1,.35),hb=I.dinding=='hebel',bln=Math.max(3,Math.round(2+At/350+(L>25?1:0)));
  const nHB=Math.ceil(At/45),nSK=Math.max(4,Math.ceil(At/100)),km=Math.round(Math.max(0,num(I.gKM)));
- const D={gd:1,...g0,At,A1:At,A2:0,lt:1,ter:0,per,kgKol,kgRaf,kgTruss,kgAng,kgG,kgR,kgRod,kgTot,aCat,nG,lG,nR,lR,nb,lSag,lIA,nK,nKW,hPed,vFp,vPed,Ad,Ac,gable,Ar,sky,lt_:lt,bln,nHB,nSK,km,hW,
+ const D={gd:1,...g0,At,A1:At,A2:0,lt:1,ter:0,per,kgKol,kgRaf,kgAng,kgG,kgR,kgRod,kgTot,aCat,nG,lG,nR,lR,nb,lSag,lIA,nK,nKW,hPed,vFp,vPed,Ad,Ac,gable,Ar,sky,lt_:lt,bln,nHB,nSK,km,hW,
   bentuk:'pelana',P1:P,kt:0,h:H,peilG:peil};
  const G=[];let g;const gp=n=>{g={n,it:[]};G.push(g)};
  const it=(key,an,v,f,name)=>{const o=S.ov[key];if(v>0||o!=null)g.it.push({key,an,n:name||A[an].n,auto:+v.toFixed(2),v:o!=null?o:+v.toFixed(2),f,ov:o!=null})};
@@ -1099,8 +1127,7 @@ function hitungGudang(){
  if(hDin>0){it('kolomPraktis','kolomPraktis',nkp*hDin*.0169,`${nkp} titik (jarak ±3 m di antara kolom baja) × ${d(hDin)} × 0,13²`);it('ring','ring',per*.018,`keliling ${d(per)} × 0,12 × 0,15`,'Balok atas dinding (ring) 12×15')}
  gp('PEKERJAAN STRUKTUR BAJA');
  it('kolomWF','bajaWF',kgKol,`${nP} portal × 2 kolom × ${d(H)} m × ${d(C[1])} kg/m`,`Kolom ${C[0]}`);
- if(krem)it('kremona','bajaSiku',kgTruss,`${nP} kuda-kuda × (batang tepi ${d(TR.chord)} m × 2${Ch[0].slice(0,2)} ${d(Ch[1])} kg/m + diagonal/vertikal ${d(TR.web)} m × ${d(Wb[1])}) × 1,10 buhul`,`Kuda-kuda kremona 2${Ch[0]} + ${Wb[0]}`);
- else it('rafter','bajaWF',kgRaf,`${nP} portal × ${d(raf)} m × ${d(Rf[1])} kg/m × 1,10 (haunch)`,`Kuda-kuda / rafter ${Rf[0]}`);
+ it('rafter','bajaWF',kgRaf,`${nP} portal × ${d(raf)} m × ${d(Rf[1])} kg/m × 1,10 (haunch & pelat sambung)`,`Rafter ${Rf[0]}`);
  if(nW)it('kolomAngin','bajaWF',kgAng,`${nKW} kolom angin dinding ujung, total ${d(hW)} m × ${d(Wa[1])} kg/m`,`Kolom angin ${Wa[0]}`);
  it('gording','bajaCNP',kgG,`2 sisi × ${nG} baris × ${d(P+1)} m × 1,05 × ${d(Gd[1])} kg/m`,`Gording ${Gd[0]} jarak ±1,2 m`);
  it('regel','bajaCNP',kgR,`${nR} baris × keliling ${d(per)} × 1,05 × ${d(Rg[1])} kg/m`,`Regel dinding ${Rg[0]} jarak ±1,5 m`);
@@ -1152,12 +1179,12 @@ function hitungGudang(){
 function spekGudang(R0){
  const I=S.I,D=R0.D,Q=a=>a[QI[I.kualitas]],hb=I.dinding=='hebel',W=WFT,c=c2;
  return[
- ['Umum',[`Bangunan gudang/pabrik bentang ${c(D.L)} m × panjang ${c(D.P)} m (luas ${c(D.At)} m²), tinggi kolom ${c(D.H)} m, puncak +${c(D.peak)} m, atap pelana ${D.deg}°.`,`${D.nP} portal baja jarak ${c(D.bay)} m; ${D.krem?'kuda-kuda rangka batang (kremona) profil siku di atas kolom IWF':'portal kaku kolom & rafter IWF dengan haunch'}.`,'Ukuran profil dalam RAB ini adalah pra-rencana untuk estimasi; gambar kerja struktur final wajib dihitung & ditandatangani ahli struktur (SNI 1729 baja, SNI 1727 beban).']],
+ ['Umum',[`Bangunan gudang/pabrik bentang ${c(D.L)} m × panjang ${c(D.P)} m (luas ${c(D.At)} m²), tinggi kolom ${c(D.H)} m, puncak +${c(D.peak)} m, atap pelana ${D.deg}°.`,`${D.nP} portal baja jarak ${c(D.bay)} m; portal kaku kolom & rafter IWF dengan haunch, perletakan sendi.`,`Profil = profil teringan yang lolos cek SNI 1729:2020 (LRFD, BJ 37 Fy 240 MPa) terhadap beban SNI 1727:2020: mati atap ${fmt(D.DS.qd,2)} kN/m², hidup atap Lr 0,96 kN/m² (gording) / 0,58 kN/m² (portal, tereduksi), angin desain ${fmt(D.DS.pw,2)} kN/m²${D.DS.manual?'; sebagian profil dipilih manual':''}.`,'Pra-rencana untuk anggaran: gambar kerja struktur final tetap diperiksa & ditandatangani ahli struktur (cek drift, sambungan, tanah, beban khusus).']],
  ['Pekerjaan persiapan',['Pembersihan lahan, pengukuran dan bouwplank, as kolom ditandai dengan theodolit/waterpass.','Direksi keet, gudang material, air dan listrik kerja selama pelaksanaan.']],
- ['Pekerjaan tanah & pondasi',[`Footplat kolom ${Math.round(D.B*100)}×${Math.round(D.B*100)}×${Math.round(D.tf*100)} cm di kedalaman ${c(D.Df)} m, tulangan D16-150 dua arah, di atas lantai kerja 5 cm.`,`Pedestal ${Math.round(D.ped*100)}×${Math.round(D.ped*100)} cm tulangan 8D16, sengkang Ø10-100, sampai muka lantai.`,`Sloof keliling 20×30 cm (6D13, Ø10-150). Kolom angin: footplat 100×100×30 cm, pedestal 30×30 cm.`,`Urugan tanah peninggian ${c(D.peil)} m dipadatkan per lapis 20 cm, urugan pasir 10 cm di bawah lantai.`]],
+ ['Pekerjaan tanah & pondasi',[`Footplat kolom ${Math.round(D.B*100)}×${Math.round(D.B*100)}×${Math.round(D.tf*100)} cm di kedalaman ${c(D.Df)} m, tulangan D16-150 dua arah, di atas lantai kerja 5 cm.`,`Pedestal ${Math.round(D.ped*100)}×${Math.round(D.ped*100)} cm tulangan 8D16, sengkang Ø10-100, sampai muka lantai.`,`Sloof keliling 20×30 cm (6D13, Ø10-150). Kolom angin: footplat 100×100×30 cm, pedestal 30×30 cm. Ukuran footplat dari reaksi layan ÷ daya dukung tanah ${fmt(D.DS.sg)} kN/m².`,`Urugan tanah peninggian ${c(D.peil)} m dipadatkan per lapis 20 cm, urugan pasir 10 cm di bawah lantai.`]],
  ['Pekerjaan beton',['Beton struktur K-225 (fc′ 18,7 MPa), lantai K-300 (fc′ 24,9 MPa); slump 8–12 cm, curing min. 7 hari.','Besi ulir BJTS 420, besi polos BJTP 280, selimut beton 40 mm (pondasi) / 25 mm (lainnya).']],
- ['Struktur baja',[`Kolom portal ${W[D.ck][0]} (BJ 37 / SS400), ${D.nP*2} batang × ${c(D.H)} m.`,D.krem?`Kuda-kuda kremona: batang tepi atas & bawah 2${SKU[D.chk][0]} (double siku, pelat kopel), batang diagonal & vertikal ${SKU[D.wbk][0]}, pelat buhul t=8 mm, tinggi di tumpuan ${c(D.TR.hs)} m, ${D.TR.N} panel.`:`Rafter ${W[D.rk][0]} dengan haunch di sambungan kolom sepanjang ±${c(D.L/10)} m, sambungan end-plate baut mutu tinggi.`,
-  ...(D.nW?[`Kolom angin dinding ujung ${W[D.wk][0]} (${D.nKW} bh).`]:[]),`Gording ${CNPT[D.gk][0]} jarak ±1,2 m (${D.nG} baris per sisi) + trekstang Ø12 ${D.bay>6?'2 baris':'1 baris'} per bentang.`,`Regel dinding ${CNPT[D.rgk][0]} jarak ±1,5 m (${D.nR} baris) untuk dudukan dinding galvalum.`,`Ikatan angin besi bulat Ø16 + turnbuckle di ${D.nb} bentang ujung (atap & dinding).`,
+ ['Struktur baja',[`Kolom portal ${W[D.ck][0]} (BJ 37 / SS400), ${D.nP*2} batang × ${c(D.H)} m.`,`Rafter ${W[D.rk][0]} dengan haunch di sambungan kolom sepanjang ±${c(D.L/10)} m, sambungan end-plate baut mutu tinggi.`,
+  ...(D.nW?[`Kolom angin dinding ujung ${W[D.wk][0]} (${D.nKW} bh).`]:[]),`Gording ${CNPT[D.gk][0]} jarak ±1,2 m (${D.nG} baris per sisi) + trekstang Ø12 ${D.DS.nS} baris per bentang.`,`Regel dinding ${CNPT[D.rgk][0]} jarak ±1,5 m (${D.nR} baris) untuk dudukan dinding galvalum.`,`Ikatan angin besi bulat Ø16 + turnbuckle di ${D.nb} bentang ujung (atap & dinding).`,
   'Base plate t=16–20 mm, 4 baut angkur M19 L=600 mm, grouting non-shrink 25 mm.','Las listrik E60xx, baut HTB A325; semua baja dibersihkan, 1 lapis cat dasar zinc chromate + 2 lapis cat finish.',`Berat baja total ±${fmt(D.kgTot)} kg (±${fmt(D.kgTot/D.At,1)} kg/m²).`]],
  ['Pekerjaan atap',[`Penutup atap spandek galvalum ${Q(['0,30','0,35','0,45'])} mm TCT, sekrup self-drilling + seal, overstek 50 cm.`,...(num(I.gSky)>0?[`Skylight polycarbonate/fiber ±${c(num(I.gSky))}% luas atap.`]:[]),...(I.gInsul?['Insulasi aluminium foil double side + wiremesh di bawah penutup atap.']:[]),'Nok & flashing galvalum, talang galvalum di kedua sisi, pipa talang PVC 4″ ke saluran keliling.',`Turbin ventilator 24″ ±${Math.ceil(D.At/150)} unit di sepanjang nok.`]],
  ['Pekerjaan dinding',[D.hDin>0?(hb?`Dinding bata ringan setinggi ${c(D.hDin)} m, plester & aci instan, kolom praktis 13×13 dan ring balok 12×15.`:`Dinding bata merah setinggi ${c(D.hDin)} m, plester 1:4 dan aci, kolom praktis 13×13 dan ring balok 12×15.`):'Tanpa dinding bata; seluruh dinding galvalum.',`Di atas dinding bata sampai tritisan dan gevel: dinding galvalum spandek ${Q(['0,30','0,35','0,40'])} mm pada regel.`]],
@@ -1173,14 +1200,16 @@ function asumsiGudang(r){
  const D=r.D,kv=(a,b)=>`<tr><td>${a}</td><td class="n">${b}</td></tr>`,W=WFT;
  return`<div class="grid2"><div class="panel"><h3>Hasil hitung geometri & struktur</h3><table class="kv">
  ${kv('Bentang × panjang',`${dec(D.L)} × ${dec(D.P)} m`)}${kv('Luas lantai',dec(D.At)+' m²')}${kv('Jumlah portal / jarak',`${D.nP} / ${dec(D.bay)} m`)}${kv('Tinggi kolom / puncak',`${dec(D.H)} / ${dec(+D.peak.toFixed(2))} m`)}${kv('Kemiringan atap',D.deg+'°')}
- ${kv('Kolom portal',W[D.ck][0])}${kv('Kuda-kuda',D.krem?`kremona 2${SKU[D.chk][0]} + ${SKU[D.wbk][0]}`:W[D.rk][0])}${D.nW?kv('Kolom angin',`${D.nKW} × ${W[D.wk][0]}`):''}
- ${kv('Gording / regel',`${CNPT[D.gk][0]} / ${CNPT[D.rgk][0]}`)}${kv('Berat kolom',fmt(D.kgKol)+' kg')}${kv('Berat kuda-kuda',fmt(D.krem?D.kgTruss:D.kgRaf)+' kg')}${kv('Berat gording + regel',fmt(D.kgG+D.kgR)+' kg')}${kv('Ikatan angin + trekstang',fmt(D.kgRod)+' kg')}
+ ${kv('Kolom portal',W[D.ck][0])}${kv('Rafter',W[D.rk][0]+' + haunch')}${D.nW?kv('Kolom angin',`${D.nKW} × ${W[D.wk][0]}`):''}
+ ${kv('Gording / regel',`${CNPT[D.gk][0]} / ${CNPT[D.rgk][0]}`)}${kv('Berat kolom',fmt(D.kgKol)+' kg')}${kv('Berat rafter',fmt(D.kgRaf)+' kg')}${kv('Berat gording + regel',fmt(D.kgG+D.kgR)+' kg')}${kv('Ikatan angin + trekstang',fmt(D.kgRod)+' kg')}
  ${kv('Total baja',`${fmt(D.kgTot)} kg (${fmt(D.kgTot/D.At,1)} kg/m²)`)}${kv('Luas cat baja',dec(D.aCat)+' m²')}${kv('Luas atap',dec(D.Ar)+' m²')}${kv('Dinding bata / galvalum',`${dec(D.Ad)} / ${dec(D.Ac)} m²`)}
- ${kv('Footplat / pedestal',`${D.nK + D.nKW} titik · ${Math.round(D.B*100)}×${Math.round(D.B*100)} cm`)}</table></div>
+ ${kv('Footplat / pedestal',`${D.nK + D.nKW} titik · ${Math.round(D.B*100)}×${Math.round(D.B*100)} cm`)}</table>
+ <h3 style="margin-top:14px">Cek kekuatan (SNI 1729:2020, LRFD)</h3><table class="kv">${D.DS.chk.map(c=>`<tr><td>${esc(c.n)}<span class="fx">${esc(c.t)}</span></td><td class="n ${c.r<=1?'up':'dn'}">rasio ${fmt(c.r,2)} · ${c.ok}</td></tr>`).join('')}</table>
+ <p class="note">Rasio = gaya perlu ÷ kapasitas; ≤ 1,00 berarti kuat. Dipilih kombinasi kolom–rafter dengan berat baja paling ringan yang semua rasionya ≤ 1.</p></div>
  <div class="panel"><h3>Asumsi yang dipakai</h3><div class="note">
  <p><b>Portal</b>: jumlah = panjang ÷ jarak portal + 1, kolom IWF di as A dan B. Kolom angin di dinding ujung setiap ±6 m.</p>
- <p><b>Profil</b> dipilih otomatis dari bentang, tinggi dan jarak portal (aturan praktis gudang beban atap ringan, angin normal). Profil bisa dipilih manual di isian. Ini pra-rencana untuk anggaran, bukan pengganti hitungan struktur.</p>
- <p><b>Kremona</b>: rangka segitiga pola Pratt, panel ±1,8 m, tinggi di tumpuan maks(0,6 m; bentang/40); berat ditambah 10% untuk pelat buhul. <b>Rafter IWF</b> ditambah 10% untuk haunch & pelat sambung.</p>
+ <p><b>Profil</b> dicari otomatis: semua kombinasi kolom & rafter WF dicek, dipilih yang teringan dengan rasio ≤ 1 (lentur, geser, lendutan (Lr ≤ L/180, D+Lr ≤ L/120), aksial-lentur kolom K=2,0 dengan pengaku lateral tiap 1,5 m oleh regel + fly brace). Gording, regel & kolom angin: CNP/WF teringan yang lolos lentur 2 arah dan lendutan.</p>
+ <p><b>Beban</b> (SNI 1727:2020): mati atap ${fmt(D.DS.qd,2)} kN/m² + berat sendiri, hidup atap 0,96 kN/m² (gording) / 0,58 kN/m² (portal, reduksi luas), beban pekerja 1 kN, angin desain ${fmt(D.DS.pw,2)} kN/m². Kombinasi 1,2D+1,6Lr dan 1,2D+1,0W+0,5Lr. Rafter +10% untuk haunch & pelat sambung.</p>
  <p><b>Gording</b> jarak ±1,2 m, <b>regel</b> ±1,5 m, ikatan angin di ${D.nb} bentang ujung, trekstang tiap bentang. Panjang profil + 5% sambungan.</p>
  <p><b>Pondasi</b> footplat beton bertulang per kolom kedalaman ${dec(D.Df)} m, ukuran mengikuti bentang; sloof keliling 20×30.</p>
  <p><b>Atap</b> overstek 50 cm keliling; <b>dinding</b> bata setinggi ${dec(D.hDin)} m, di atasnya galvalum sampai tritisan + gevel.</p>
@@ -1259,16 +1288,14 @@ function gFrame(D){
   s+=rc(x-cd/2,Y(H),cd,H,{f:'#fff',s:INK,w:m(.35)})+ln(x,Y(H),x,0,m(.15),GR)+rc(x-cd/2-.05,-.02,cd+.1,.02,{f:INK});
   [-1,1].forEach(k=>s+=ln(x+k*cd/4,-.02,x+k*cd/4,.55,m(.25),'#b91c1c'))});
  s+=rc(cd/2,0,L-cd,lt0(D),{f:'#e5e7eb',s:INK,w:m(.2)});
- if(D.krem){const h0=H;TR.mem.forEach(([t,x1,z1,x2,z2])=>s+=ln(x1,Y(h0+z1),x2,Y(h0+z2),m(t=='b'||t=='t'?.55:.3)));
-  TR.nodes.forEach(([x,z])=>s+=ci(x,Y(h0+z),m(.5),{f:INK})+ci(x,Y(h0),m(.4),{f:INK}));}
- else{const rd=WFT[D.rk][3]/1000,hl=L/10;[[0,1],[L,-1]].forEach(([x0,k])=>{s+=pg([[x0,Y(H)],[x0+k*L/2,Y(peak)],[x0+k*L/2,Y(peak-rd/cs)],[x0+k*hl,Y(H+hl*tn-rd/cs)],[x0,Y(H-rd*1.6)]],{f:'#fff',s:INK,w:m(.35)})});s+=ln(L/2,Y(peak),L/2,Y(peak-rd/cs),m(.35))}
- const top=x=>H+(D.krem?TR.hs:0)+Math.min(x,L-x)*tn;
+ {const rd=WFT[D.rk][3]/1000,hl=L/10;[[0,1],[L,-1]].forEach(([x0,k])=>{s+=pg([[x0,Y(H)],[x0+k*L/2,Y(peak)],[x0+k*L/2,Y(peak-rd/cs)],[x0+k*hl,Y(H+hl*tn-rd/cs)],[x0,Y(H-rd*1.6)]],{f:'#fff',s:INK,w:m(.35)})});s+=ln(L/2,Y(peak),L/2,Y(peak-rd/cs),m(.35))}
+ const top=x=>H+0+Math.min(x,L-x)*tn;
  for(let i=0;i<D.nG;i++){const f=i/(D.nG-1)*(L/2+.5)-.5;[f,L-f].forEach(x=>{const xx=clamp(x,-.5,L+.5);s+=rc(xx-.05,Y(top(clamp(xx,0,L))+.16),.1,.16,{f:'#9aa1ad',s:INK,w:m(.15)})})}
- s+=ln(-.5,Y(top(0)-.5*tn+.2),L/2,Y(peak+(D.krem?TR.hs:0)+.2),m(.4),'#555')+ln(L/2,Y(peak+(D.krem?TR.hs:0)+.2),L+.5,Y(top(0)-.5*tn+.2),m(.4),'#555');
- s+=elevMark(L+1.5+m(3),0,'±0,00',Z)+elevMark(L+1.5+m(3),Y(H),'+'+c2(H),Z)+elevMark(L+1.5+m(3),Y(peak+(D.krem?TR.hs:0)),'+'+c2(peak+(D.krem?TR.hs:0)),Z);
+ s+=ln(-.5,Y(top(0)-.5*tn+.2),L/2,Y(peak+0+.2),m(.4),'#555')+ln(L/2,Y(peak+0+.2),L+.5,Y(top(0)-.5*tn+.2),m(.4),'#555');
+ s+=elevMark(L+1.5+m(3),0,'±0,00',Z)+elevMark(L+1.5+m(3),Y(H),'+'+c2(H),Z)+elevMark(L+1.5+m(3),Y(peak+0),'+'+c2(peak+0),Z);
  s+=dimH([0,L/2,L],zb+m(7),Z)+dimV([Y(H),0],-1.5-m(3),Z);
  const cl=[{t:'Kolom '+C[0],px:cd/2,py:Y(H*.55),ty:Y(H*.55)},{t:`Gording ${CNPT[D.gk][0]} @1,2 m`,px:L*.2,py:Y(top(L*.2)+.1),ty:Y(peak+.4)},{t:'Base plate + 4 angkur M19',px:0,py:-.05,ty:Y(.6)},{t:`Footplat ${Math.round(D.B*100)}×${Math.round(D.B*100)}×${Math.round(D.tf*100)}, pedestal ${Math.round(D.ped*100)}×${Math.round(D.ped*100)}`,px:-D.B/2,py:zb-D.tf/2,ty:zb}];
- cl.push(D.krem?{t:`Kremona 2${SKU[D.chk][0]} / ${SKU[D.wbk][0]}`,px:L*.3,py:Y(H+TR.hs*.5+L*.3*tn*.5),ty:Y(H+1.2)}:{t:'Rafter '+WFT[D.rk][0]+' + haunch',px:L*.3,py:Y(H+L*.3*tn-.2),ty:Y(H+1.2)});
+ cl.push({t:'Rafter '+WFT[D.rk][0]+' + haunch',px:L*.3,py:Y(H+L*.3*tn-.2),ty:Y(H+1.2)});
  s+=callouts(cl,-1.5-m(6),-1,Z)+tx(L/2,Y(H)+m(4),`BENTANG ${c2(L)} m · kemiringan ${D.deg}°`,m(2.2),{b:1});
  return{Z,svg:grp(Z,s)};
 }
@@ -1291,10 +1318,9 @@ function gDetail(D){
  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>s+=ci(cx+a*(bp*sc/2-4),cy+b*(bh*sc/2-4),1.6,{f:'#fff',s:'#b91c1c',w:.4}));
  s+=tx(cx,by+bh*sc+6,`Pelat ${bp}×${bh}×20 mm, 4 angkur M19 L=600, grouting 25 mm`,2)+tx(cx,by+bh*sc+9,`Kolom ${C[0]}`,2);
  // C: sambungan kuda-kuda – kolom (skema)
- const sx=150,sy=150;s+=tx(sx+30,sy-22,D.krem?'DETAIL 3 · TUMPUAN KREMONA DI KOLOM':'DETAIL 3 · SAMBUNGAN RAFTER–KOLOM (HAUNCH)',3,{b:1});
+ const sx=150,sy=150;s+=tx(sx+30,sy-22,'DETAIL 3 · SAMBUNGAN RAFTER–KOLOM (HAUNCH)',3,{b:1});
  s+=rc(sx,sy,8,45,{f:'#fff',s:INK,w:.4});
- if(D.krem){s+=ln(sx+8,sy+18,sx+58,sy+18,1)+ln(sx+8,sy+4,sx+58,sy+4-50*D.tn,1)+ln(sx+8,sy+4,sx+8,sy+18,.5)+ln(sx+30,sy+18,sx+30,sy+4-22*D.tn,.4)+ln(sx+8,sy+4,sx+30,sy+18,.4)+pg([[sx+8,sy+1],[sx+20,sy+1],[sx+24,sy+21],[sx+8,sy+21]],{s:INK,w:.25,f:'rgba(0,0,0,.05)'});s+=tx(sx+45,sy+28,'pelat buhul t=8 mm, baut M16',2)}
- else{s+=pg([[sx+8,sy],[sx+58,sy-50*D.tn],[sx+58,sy-50*D.tn+9],[sx+20,sy-12*D.tn+9],[sx+8,sy+18]],{f:'#fff',s:INK,w:.4})+rc(sx+8,sy-1,2,20,{f:INK});for(let i=0;i<4;i++)s+=ci(sx+9,sy+2+i*4.5,.8,{f:'#fff',s:INK,w:.3});s+=tx(sx+45,sy+28,'end plate t=16 mm, 8 baut HTB M20, pengaku t=10 mm',2)}
+ {s+=pg([[sx+8,sy],[sx+58,sy-50*D.tn],[sx+58,sy-50*D.tn+9],[sx+20,sy-12*D.tn+9],[sx+8,sy+18]],{f:'#fff',s:INK,w:.4})+rc(sx+8,sy-1,2,20,{f:INK});for(let i=0;i<4;i++)s+=ci(sx+9,sy+2+i*4.5,.8,{f:'#fff',s:INK,w:.3});s+=tx(sx+45,sy+28,'end plate t=16 mm, 8 baut HTB M20, pengaku t=10 mm',2)}
  // D: gording & regel
  const gx=40,gy=150;s+=tx(gx+20,gy-8,'DETAIL 4 · GORDING & REGEL',3,{b:1});
  s+=pg([[gx,gy+12],[gx+40,gy]],{s:INK,w:.6})+ln(gx,gy+12,gx+40,gy,.8);for(let i=0;i<3;i++){const x=gx+6+i*13,y=gy+12-(6+i*13)*12/40;s+=pg([[x,y-6],[x+4,y-6],[x+4,y-5],[x+1,y-5],[x+1,y-1],[x+4,y-1],[x+4,y]],{s:INK,w:.3})+rc(x+4,y-2,2,2.5,{f:'#9aa1ad'})}
@@ -1302,12 +1328,12 @@ function gDetail(D){
  return{Z,svg:s};
 }
 function sheetsGudang(R0){
- const D=R0.D,sp=Object.fromEntries(spekGudang(R0)),out=[],cnt={},code=p=>p+'-'+String(cnt[p]=(cnt[p]||0)+1).padStart(2,'0');
+ const D=R0.D,sp=Object.fromEntries(spekGudang(R0)),bad=D.DS.chk.filter(c=>c.r>1),out=[],cnt={},code=p=>p+'-'+String(cnt[p]=(cnt[p]||0)+1).padStart(2,'0');
  const mk=(p,title,d,notes)=>{const c=code(p),sc=d.Z.s?'1 : '+d.Z.s:'-';out.push({code:c,title,sc,notes,svg:sheet(c,title,sc,d.svg,notes)})};
  mk('A','Denah gudang',gPlan(D,'denah'),[`Ukuran as ke as ${c2(D.P)} × ${c2(D.L)} m, ${D.nP} portal jarak ${c2(D.bay)} m.`,'RD = rolling door, P = pintu besi personel.',`Kolom portal ${WFT[D.ck][0]}${D.nW?`, kolom angin ${WFT[D.wk][0]}`:''}.`,...sp['Pekerjaan lantai']]);
  mk('A','Tampak depan (dinding ujung)',gElev(D,1),[...sp['Pekerjaan dinding'],...sp['Pekerjaan atap'].slice(0,1)]);
  mk('A','Tampak samping',gElev(D,0),['Garis merah putus-putus: ikatan angin dinding di bentang ujung.','Garis putus-putus hitam: as kolom portal.',...sp['Pekerjaan atap'].slice(-2)]);
- mk('S','Potongan portal & kuda-kuda',gFrame(D),sp['Struktur baja'].slice(0,5));
+ mk('S','Potongan portal & kuda-kuda',gFrame(D),[...(bad.length?[`PERINGATAN: ${bad.map(c=>c.n).join(', ')} rasio > 1 — perbesar profil / perkecil jarak portal.`]:[]),...sp['Struktur baja'].slice(0,5)]);
  mk('S','Rencana atap, gording & ikatan angin',gPlan(D,'atap'),[`Gording ${CNPT[D.gk][0]} ${D.nG} baris per sisi (garis tipis).`,'Garis merah putus-putus: ikatan angin Ø16; garis abu putus-putus: trekstang Ø12.',...(num(S.I.gSky)>0?['Kotak biru: skylight.']:[]),...sp['Pekerjaan atap'].slice(0,2)]);
  mk('S','Denah pondasi',gPlan(D,'pondasi'),sp['Pekerjaan tanah & pondasi']);
  {const dt=gDetail(D),c=code('S'),nt=sp['Struktur baja'].slice(-3),sc='1 : '+D.sc1+' / 1 : 10';out.push({code:c,title:'Detail struktur',sc,notes:nt,svg:sheet(c,'Detail struktur',sc,dt.svg,nt)})}
@@ -1919,7 +1945,7 @@ $('#bXls').onclick=async()=>{
  fin(wgb,y,4,[11,42,16,160]);
  // Asumsi & cara hitung (diambil dari tab yang sama agar selalu sinkron)
  const da=document.createElement('div');renderView0('asumsi',da);const was={};put(was,'A1','ASUMSI & CARA HITUNG');y=3;put(was,'A'+y,'HASIL HITUNG GEOMETRI');
- da.querySelectorAll('table.kv tr').forEach(tr=>{y++;put(was,'A'+y,tr.cells[0].textContent);put(was,'B'+y,tr.cells[1].textContent)});
+ da.querySelectorAll('table.kv tr').forEach(tr=>{y++;put(was,'A'+y,[...tr.cells[0].childNodes].map(n=>n.textContent.trim()).filter(Boolean).join(' — '));put(was,'B'+y,tr.cells[1].textContent)});
  y+=2;put(was,'A'+y,'ASUMSI YANG DIPAKAI');da.querySelectorAll('.note p').forEach(p=>{y++;put(was,'A'+y,p.textContent.replace(/\s+/g,' ').trim())});
  y+=2;put(was,'A'+y,'CARA HITUNG');['Volume pekerjaan dihitung dari isian & denah otomatis (kolom "Perhitungan volume" di sheet RAB).','Harga satuan = Σ koefisien × harga dasar (sheet Analisa → Harga Dasar). Ubah harga di sheet Harga Dasar, semua ikut berubah.','Jumlah = volume × harga satuan; total = jumlah + jasa + tak terduga (+ PPN), dibulatkan ke ribuan.','Bobot kurva S = jumlah item ÷ jumlah biaya pekerjaan, disebar rata selama durasi item.','RAP = biaya langsung per item dipecah bahan/upah/borongan; laba = nilai kontrak − RAP.'].forEach(t=>{y++;put(was,'A'+y,t)});
  fin(was,y,2,[70,30]);
