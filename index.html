@@ -8,15 +8,34 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{var k=JSON.parse(localStorage.getItem('rab-skin'))||'glass';if(k!='std'){document.documentElement.dataset.skin='glass';if(k=='glass-light')document.documentElement.dataset.theme='light';if(k=='glass-dark')document.documentElement.dataset.theme='dark'}}catch(e){}</script>
 <style>
 :root{--bg:#f4f5f7;--card:#fff;--ink:#14161b;--mute:#667085;--line:#e3e6eb;--acc:#c2410c;--acc-ink:#fff;--acc2:#fff2ea;--ok:#047857;--in:#fff;--hl:#f9fafb;--bar:#fdba74}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1014;--card:#161920;--ink:#e7e9ee;--mute:#98a2b3;--line:#283040;--acc:#fb923c;--acc-ink:#1a0d04;--acc2:#2a1a10;--ok:#34d399;--in:#10131a;--hl:#1b1f28;--bar:#c2410c}}
 :root[data-theme="dark"]{--bg:#0e1014;--card:#161920;--ink:#e7e9ee;--mute:#98a2b3;--line:#283040;--acc:#fb923c;--acc-ink:#1a0d04;--acc2:#2a1a10;--ok:#34d399;--in:#10131a;--hl:#1b1f28;--bar:#c2410c}
+/* Tema Liquid Glass: kaca buram di atas latar gradasi, berlaku lewat html[data-skin="glass"] */
+html[data-skin="glass"]{--card:rgba(255,255,255,.55);--in:rgba(255,255,255,.62);--line:rgba(255,255,255,.7);--hl:rgba(255,255,255,.38);--acc2:rgba(255,232,214,.6);--bg:#eef1f6;--sh:0 10px 30px rgba(15,23,42,.10);--hi:inset 0 1px 0 rgba(255,255,255,.85);--glow1:#ffcfae;--glow2:#bcd2ff;--glow3:#f1c3ff;--glow4:#b8eedf}
+html[data-skin="glass"][data-theme="dark"]{--card:rgba(24,27,38,.52);--in:rgba(10,12,20,.5);--line:rgba(255,255,255,.13);--hl:rgba(255,255,255,.06);--acc2:rgba(251,146,60,.16);--bg:#0a0c12;--sh:0 12px 34px rgba(0,0,0,.45);--hi:inset 0 1px 0 rgba(255,255,255,.12);--glow1:#5a2a12;--glow2:#14295c;--glow3:#3a1652;--glow4:#0d3d36}
+@media (prefers-color-scheme:dark){html[data-skin="glass"]:not([data-theme="light"]){--card:rgba(24,27,38,.52);--in:rgba(10,12,20,.5);--line:rgba(255,255,255,.13);--hl:rgba(255,255,255,.06);--acc2:rgba(251,146,60,.16);--bg:#0a0c12;--sh:0 12px 34px rgba(0,0,0,.45);--hi:inset 0 1px 0 rgba(255,255,255,.12);--glow1:#5a2a12;--glow2:#14295c;--glow3:#3a1652;--glow4:#0d3d36}}
+html[data-skin="glass"] body{background:radial-gradient(40vw 40vw at 8% 6%,var(--glow1),transparent 70%),radial-gradient(42vw 42vw at 92% 10%,var(--glow2),transparent 70%),radial-gradient(45vw 45vw at 75% 95%,var(--glow3),transparent 70%),radial-gradient(38vw 38vw at 5% 95%,var(--glow4),transparent 70%),var(--bg);background-attachment:fixed}
+html[data-skin="glass"] :is(header,aside,.card,.panel,.sh,.tabs,.kp>div,.ures>div,dialog,.btn){-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);box-shadow:var(--hi),var(--sh)}
+html[data-skin="glass"] :is(aside,.card,.panel,.sh){border-radius:20px}
+html[data-skin="glass"] header{background:var(--card);border-bottom:1px solid var(--line)}
+html[data-skin="glass"] .tabs{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:5px;gap:4px}
+html[data-skin="glass"] .tabs button{border:0;border-radius:11px;padding:8px 13px}
+html[data-skin="glass"] .tabs button.on{background:var(--acc);color:var(--acc-ink);box-shadow:0 4px 14px rgba(234,88,12,.35)}
+html[data-skin="glass"] .card.big{background:linear-gradient(135deg,rgba(234,88,12,.88),rgba(251,146,60,.78));border-color:rgba(255,255,255,.45)}
+html[data-skin="glass"] .btn{border-radius:12px}
+html[data-skin="glass"] .btn.p{background:linear-gradient(135deg,#ea580c,#fb923c);border-color:rgba(255,255,255,.45)}
+html[data-skin="glass"] th{background:var(--hl);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+html[data-skin="glass"] dialog::backdrop{background:rgba(10,12,18,.35);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+html[data-skin="glass"] .seg{border-radius:12px}
+.skin{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 8px;font-weight:600}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
 header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line)}
-.hd{max-width:1400px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.hd{max-width:none;margin:0;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.01em;margin-right:auto}
 .logo{width:32px;height:32px;border-radius:8px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font-size:13px;font-weight:800}
 .brand small{display:block;font-weight:500;font-size:12px;color:var(--mute)}
@@ -24,7 +43,7 @@ header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px
 .btn:hover{border-color:var(--acc)}
 .btn.p{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
 .btn.sm{padding:4px 9px;font-size:12px}
-.wrap{max-width:1400px;margin:0 auto;padding:16px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px;align-items:start}
+.wrap{max-width:none;margin:0;min-height:calc(100vh - 58px);padding:16px;display:grid;grid-template-columns:clamp(300px,22vw,380px) minmax(0,1fr);gap:16px;align-items:start}
 aside{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 14px 14px;position:sticky;top:70px;max-height:calc(100vh - 86px);overflow:auto}
 .sec{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:16px 0 6px}
 .f{display:flex;align-items:center;gap:8px;margin:6px 0}
@@ -90,7 +109,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-weight:600;opacity:0;transition:.2s;pointer-events:none;z-index:50}
 .toast.on{opacity:1}
 #print{display:none}
-.sheets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sheets{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,560px),1fr));gap:12px}
 .sh{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;min-width:0}
 .shh{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px}
 .shh b{color:var(--acc)}.shh span{margin-left:auto;display:flex;gap:6px}
@@ -121,8 +140,7 @@ dialog.big .paper{cursor:default;overflow:auto}
 .ures>div{border:1px solid var(--line);border-radius:9px;padding:8px 10px}.ures>div.hi{border-color:var(--acc);background:var(--acc2)}
 .ures b{display:block;font-size:17px;font-variant-numeric:tabular-nums}.ures small{display:block;color:var(--mute);font-size:11.5px}
 .spek h3{margin:0 0 6px}.spek ol{margin:0;padding-left:20px}.spek li{margin:3px 0}
-@media (max-width:1300px){.sheets{grid-template-columns:minmax(0,1fr)}}
-footer{max-width:1400px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color:var(--mute)}
+footer{max-width:none;margin:0;padding:4px 16px 24px;font-size:12px;color:var(--mute)}
 @media (max-width:1300px){.grid2{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}aside{position:static;max-height:none}.grid2{grid-template-columns:minmax(0,1fr)}.bars .row{grid-template-columns:minmax(0,1fr) 110px 46px}.bars .tr{grid-column:1/-1;grid-row:2}}
@@ -165,6 +183,8 @@ footer{max-width:1400px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
 <body>
 <header><div class="hd">
   <div class="brand"><div class="logo">RAB</div><div>RAB Rumah Otomatis<small>Volume · Analisa harga satuan · Daftar material</small></div></div>
+  <select class="skin" id="skin" title="Tema tampilan"><option value="glass">✨ Liquid Glass (ikut sistem)</option><option value="glass-light">✨ Liquid Glass terang</option><option value="glass-dark">✨ Liquid Glass gelap</option><option value="std">Standar</option></select>
+  <button class="btn" id="bFull" title="Layar penuh (F11)">⛶</button>
   <button class="btn" id="bProj">📁 Proyek</button>
   <button class="btn" id="bXls">⬇ Excel</button>
   <button class="btn p" id="bPdf">🖨 PDF / Cetak</button>
@@ -2032,6 +2052,10 @@ $('#bXls').onclick=async()=>{
  X.writeFile(wb,'RAB '+(I.nama||'Rumah').replace(/[\\/:*?"<>|]/g,'')+'.xlsx');toast('File Excel diunduh');
 };
 
+/* ---------- Tema & layar penuh ---------- */
+{const el=$('#skin');let k='glass';try{k=JSON.parse(localStorage.getItem('rab-skin'))||'glass'}catch(e){}el.value=k;
+ el.onchange=()=>{const v=el.value,h=document.documentElement;LS.set('rab-skin',v);if(v=='std'){delete h.dataset.skin;delete h.dataset.theme}else{h.dataset.skin='glass';if(v=='glass')delete h.dataset.theme;else h.dataset.theme=v=='glass-dark'?'dark':'light'}}}
+$('#bFull').onclick=()=>{const d=document;if(d.fullscreenElement)d.exitFullscreen();else(d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen||(()=>toast('Tekan F11 untuk layar penuh'))).call(d.documentElement)};
 renderForm();update();
 </script>
 </body>
