@@ -112,6 +112,14 @@ dialog.big .paper{cursor:default;overflow:auto}
 .bar2{height:6px;background:var(--hl);border-radius:4px;margin-top:6px;position:relative}.bar2 i{position:absolute;left:0;top:0;bottom:0;background:#2563eb;border-radius:4px}.bar2 em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--acc)}
 @media (max-width:700px){.kp{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media print{#print .kp{display:flex;gap:6px}#print .kp>div{flex:1;border:1px solid #999;padding:4px}#print .grid2{display:block}#print .panel{border:0;padding:0;margin:8px 0}#print .note{color:#333}}
+.ug{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 14px}
+.ug label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute)}
+.ug label span{display:flex;align-items:center;gap:6px}.ug em{font-style:normal;font-size:12px;min-width:22px}
+.ug input,.ug select{width:100%;border:1px solid var(--line);background:var(--in);color:var(--ink);border-radius:7px;padding:6px 8px}
+.ug input.ov{border-color:var(--acc);background:var(--acc2)}
+.ures{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:12px}
+.ures>div{border:1px solid var(--line);border-radius:9px;padding:8px 10px}.ures>div.hi{border-color:var(--acc);background:var(--acc2)}
+.ures b{display:block;font-size:17px;font-variant-numeric:tabular-nums}.ures small{display:block;color:var(--mute);font-size:11.5px}
 .spek h3{margin:0 0 6px}.spek ol{margin:0;padding-left:20px}.spek li{margin:3px 0}
 @media (max-width:1300px){.sheets{grid-template-columns:minmax(0,1fr)}}
 footer{max-width:1400px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color:var(--mute)}
@@ -141,6 +149,16 @@ footer{max-width:1400px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color
   #print .sheet{page:land;width:297mm;height:210mm;break-after:page;overflow:hidden}
   #print .sheet svg{width:297mm;height:210mm;display:block}
   #print .spk li{margin:1px 0}
+  #print h2{break-after:avoid}
+  #print .panel,#print .kp>div,#print .ures>div{background:#fff!important;border:0;padding:0;margin:6px 0}
+  #print .panel h3{font-size:12px;margin:10px 0 4px}
+  #print td,#print th,#print .mute,#print .note,#print small{color:#000!important}
+  #print .fx{display:block;font-size:9px;color:#444!important}
+  #print .bars .row{grid-template-columns:2fr 2fr 1fr 40px;border-color:#ccc}
+  #print .bars .tr,#print .bars .tr i,#print tr.g td,#print th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #print .bars .tr{background:#eee}#print .bars .tr i{background:#c2410c}
+  #print .ug,#print .ures{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 10px;font-size:10px}
+  #print .ures b{font-size:12px}
 }
 </style>
 </head>
@@ -372,8 +390,8 @@ const FIELDS=[
 /* ---------- Penyimpanan ---------- */
 const LS={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 function nextMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+((8-d.getDay())%7||7));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function fresh(){return{I:{...DEF},ov:{},hp:{},extra:[],sch:{},pg:{mulai:nextMonday(),lap:{}}}}
-function normS(){S.I={...DEF,...S.I};S.ov=S.ov||{};S.hp=S.hp||{};S.extra=S.extra||[];S.sch=S.sch||{};S.pg=S.pg||{};S.pg.lap=S.pg.lap||{};if(!/^\d{4}-\d\d-\d\d$/.test(S.pg.mulai||''))S.pg.mulai=nextMonday()}
+function fresh(){return{I:{...DEF},ov:{},hp:{},extra:[],sch:{},urug:[],urugTruk:7,pg:{mulai:nextMonday(),lap:{}}}}
+function normS(){S.I={...DEF,...S.I};S.ov=S.ov||{};S.hp=S.hp||{};S.extra=S.extra||[];S.sch=S.sch||{};S.urug=S.urug||[];S.urugTruk=S.urugTruk||7;S.pg=S.pg||{};S.pg.lap=S.pg.lap||{};if(!/^\d{4}-\d\d-\d\d$/.test(S.pg.mulai||''))S.pg.mulai=nextMonday()}
 let S=LS.get('rab-current-v1');
 if(!S||!S.I)S=fresh();
 normS();
@@ -746,7 +764,7 @@ function sheet(code,title,scale,body,notes,hdr='GAMBAR KERJA',sat='meter (kecual
 }
 function sheetsList(R){
  const D=R.D,LY=D.LY,I=S.I,sp=Object.fromEntries(spek(R)),out=[],cnt={},code=p=>p+'-'+String(cnt[p]=(cnt[p]||0)+1).padStart(2,'0');
- const mk=(p,title,d,notes)=>{const c=code(p),sc=d.Z?'1 : '+d.Z.s:'1 : 20 / 1 : 10';out.push({code:c,title,svg:sheet(c,title,sc,d.svg,notes)})};
+ const mk=(p,title,d,notes)=>{const c=code(p),sc=d.Z?'1 : '+d.Z.s:'1 : 20 / 1 : 10';out.push({code:c,title,sc,notes,svg:sheet(c,title,sc,d.svg,notes)})};
  const nD=['Ukuran as ke as dinding, dalam meter.','Tebal dinding 15 cm termasuk plester.',`Peil ±0,00 = lantai jadi lantai 1 = +${c2(D.peil)} dari muka tanah.`,`Lantai: ${I.lantaiFin=='granit'?'granit 60×60':'keramik 40×40'}; KM keramik 25×25 anti slip, dinding KM keramik setinggi 1,80 m.`,`Pintu utama ${DIM.pu[0]} × ${DIM.pu[1]}; pintu kamar ${DIM.pk[0]} × ${DIM.pk[1]}; pintu KM ${DIM.pkm[0]} × ${DIM.pkm[1]}; jendela ${DIM.j[0]} × ${DIM.j[1]} (ambang 0,90).`,...LY.map(F=>F.warn).filter(Boolean)];
  LY.forEach(F=>mk('A','Denah lantai '+F.lt,planSVG(F,D,'arsitek'),[...nD,`Luas lantai ${F.lt}: ${c2(F.W*F.H)} m².`]));
  mk('A','Tampak depan',tampakDepan(D),sp['Pekerjaan atap'].slice(0,3).concat(sp['Pengecatan'].slice(1,2),sp['Kusen, pintu & jendela'].slice(0,2)));
@@ -907,9 +925,9 @@ function hitung(){
  if(S.extra.length){grp('PEKERJAAN TAMBAHAN');S.extra.forEach((e,i)=>g.it.push({key:'x'+i,extra:i,n:e.n||'(tanpa nama)',u:e.u||'ls',v:num(e.v),hs:Math.round(num(e.h)),f:'input manual'}))}
 
  HC={};
- for(const gg of G){for(const x of gg.it){if(!x.extra){x.u=A[x.an].u;x.hs=hsp(x.an)}x.j=Math.round(x.v*x.hs)}gg.sub=gg.it.reduce((s,x)=>s+x.j,0)}
+ for(const gg of G){for(const x of gg.it){if(x.extra==null){x.u=A[x.an].u;x.hs=hsp(x.an)}x.j=Math.round(x.v*x.hs)}gg.sub=gg.it.reduce((s,x)=>s+x.j,0)}
  const jml=G.reduce((s,x)=>s+x.sub,0),jasa=Math.round(jml*num(I.jasa)/100),tt=Math.round(jml*num(I.tt)/100),dpp=jml+jasa+tt,ppn=I.ppn?Math.round(dpp*.11):0,tot=dpp+ppn,bul=Math.ceil(tot/1000)*1000;
- const M={};for(const gg of G)for(const x of gg.it)if(!x.extra)need(x.an,x.v,M);
+ const M={};for(const gg of G)for(const x of gg.it)if(x.extra==null)need(x.an,x.v,M);
  return{G,D,jml,jasa,tt,ppn,tot,bul,M,ex}
 }
 
@@ -934,12 +952,12 @@ const pc=v=>fmt(v,2);
 function jadwal(r){
  const D=r.D,p=S.pg,T=Math.max(2,Math.round(num(p.T))||D.bln*4),tl=TLF(D.lt),rows=[];
  r.G.forEach((g,gi)=>g.it.forEach(x=>{
-  const f=x.extra!=null?[.85,1]:tl[x.key]||[.1,.9];
+  const xe=x.extra!=null?S.extra[x.extra]:null,f=xe?(xe.src=='urug'?[.12,.22]:[.85,1]):tl[x.key]||[.1,.9];
   const as=Math.min(T,1+Math.floor(f[0]*T)),ae=Math.min(T,Math.max(as,Math.ceil(f[1]*T)));
   const o=S.sch[x.key];let s=as,d=ae-as+1;
   if(o){s=clamp(Math.round(o.s)||as,1,T);d=clamp(Math.round(o.d)||d,1,T-s+1)}
   const sp={b:0,u:0,s:0};
-  if(x.extra!=null)sp.s=x.j;else{let t=0;for(const[id,q]of Object.entries(need(x.an,x.v,{}))){const c=q*price(id);sp[R[id].k]+=c;t+=c}
+  if(xe){if(xe.bh){sp.b=Math.min(x.j,Math.round(xe.bh*x.v));sp.u=x.j-sp.b}else sp.s=x.j}else{let t=0;for(const[id,q]of Object.entries(need(x.an,x.v,{}))){const c=q*price(id);sp[R[id].k]+=c;t+=c}
    if(t){sp.b=Math.round(sp.b*x.j/t);sp.u=Math.round(sp.u*x.j/t);sp.s=x.j-sp.b-sp.u}}
   rows.push({key:x.key,n:x.n,u:x.u,v:x.v,gi,j:x.j,w:r.jml?x.j/r.jml*100:0,s,d,e:s+d-1,as,ad:ae-as+1,ov:!!o,sp});
  }));
@@ -962,22 +980,24 @@ function kpi(J,w){
  return{pl,ac,dev:ac-pl,ev,evB,ac$,spi,cpi,eta:spi>0&&ac<100?Math.ceil(J.T/spi):J.T};
 }
 
-function kurvaSVG(J,wSel){
+/* Lembar kurva S: K-01 rekap per kelompok pekerjaan, K-02.. rincian per item (breakdown). rows: {h:header kelompok}|{no,n,w,s,e,wk,dp,done} */
+function kurvaPage(J,rows,wSel,code,title,notes){
  const Nw=Math.max(J.T,J.W),x0=85,x1=220,cw=(x1-x0)/Nw,y0=14,hH=10,fr=4,fh=5.2,yB=196,bodyT=y0+hH,bodyB=yB-fr*fh;
- const grp=J.G.map((g,gi)=>{const it=J.rows.filter(x=>x.gi==gi),wk=Array(Nw).fill(0);it.forEach(x=>{for(let k=x.s;k<=x.e;k++)wk[k-1]+=x.w/x.d});
-  return{n:g.n.replace('PEKERJAAN ',''),w:it.reduce((s,x)=>s+x.w,0),s:Math.min(...it.map(x=>x.s)),e:Math.max(...it.map(x=>x.e)),wk}}).filter(g=>isFinite(g.s));
- const rh=(bodyB-bodyT)/Math.max(1,grp.length),fs=Math.min(1.6,cw*.42),vs=Math.min(1.55,cw/3.3);
+ const rh=Math.min(14,(bodyB-bodyT)/Math.max(1,rows.length)),fs=Math.min(1.6,cw*.42),vs=Math.min(1.55,cw/3.3),nf=rh<6?1.5:1.8,mx=rh<6?62:34;
  const yv=v=>bodyB-clamp(v,0,100)/100*(bodyB-bodyT),pl=(pts,c,w,da)=>`<polyline points="${pts.map(p=>p4(p[0])+','+p4(p[1])).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"${da?` stroke-dasharray="${da}"`:''}/>`;
  let s=rc(14,y0,206,hH,{f:'#f1f2f4'})+rc(14,bodyB,206,fr*fh,{f:'#f7f7f8'});
  s+=tx(17,y0+6.3,'NO',1.7,{b:1})+tx(46,y0+6.3,'URAIAN PEKERJAAN',1.8,{b:1})+tx(78.5,y0+5.2,'BOBOT',1.6,{b:1})+tx(78.5,y0+7.6,'(%)',1.5);
  for(let m=0;m*4<Nw;m++){const xa=x0+m*4*cw,xb=x0+Math.min(Nw,(m+1)*4)*cw;s+=tx((xa+xb)/2,y0+3.6,(xb-xa>9?'BULAN ':'B')+(m+1),1.6,{b:1})+ln(xa,y0,xa,yB,.3)}
  s+=ln(x0,y0+5,x1,y0+5,.2);
- for(let k=0;k<Nw;k++){s+=tx(x0+(k+.5)*cw,y0+8.6,k+1,fs);if(k)s+=ln(x0+k*cw,y0+5,x0+k*cw,yB,.08,GR)}
- grp.forEach((g,i)=>{const y=bodyT+i*rh;
-  s+=tx(17,y+rh/2+.6,ROM[i]||i+1,1.7)+tx(21,y+rh/2+.6,g.n.length>30?g.n.slice(0,29)+'…':g.n,1.8,{a:'start'})+tx(78.5,y+rh/2+.6,pc(g.w),1.7);
-  s+=rc(x0+(g.s-1)*cw,y+rh*.32,(g.e-g.s+1)*cw,rh*.36,{f:'#fed7aa',s:'#c2410c',w:.15});
-  if(cw>=5.5&&rh>=7)g.wk.forEach((v,k)=>{if(v>0)s+=tx(x0+(k+.5)*cw,y+rh*.27,fmt(v,1),1.15,{c:GR})});
+ rows.forEach((g,i)=>{const y=bodyT+i*rh,ty=y+rh/2+nf*.33;
+  if(g.h){s+=rc(14,y,206,rh,{f:'#eef0f3'})+tx(17,ty,g.no,nf,{b:1})+tx(21,ty,g.n,nf,{a:'start',b:1})+tx(78.5,ty,pc(g.w),nf,{b:1})}
+  else{s+=tx(17,ty,g.no,nf)+tx(21,ty,g.n.length>mx?g.n.slice(0,mx-1)+'…':g.n,nf,{a:'start'})+tx(78.5,ty,pc(g.w),nf);
+   s+=rc(x0+(g.s-1)*cw,y+rh*.2,(g.e-g.s+1)*cw,rh*.6,{f:'#fed7aa',s:'#c2410c',w:.12});
+   if(g.done>0)s+=rc(x0+(g.s-1)*cw,y+rh*.2,Math.min(g.done,g.e-g.s+1)*cw,rh*.6,{f:'#fb923c'});
+   const f2=Math.min(1.2,cw/3.6,rh*.36);if(cw>=4.2&&rh>=3.4)g.wk.forEach((v,k)=>{if(v>0)s+=tx(x0+(k+.5)*cw,y+rh/2+f2*.35,fmt(v,g.dp||2),f2)})}
   s+=ln(14,y+rh,x1,y+rh,.1,GR)});
+ for(let k=1;k<Nw;k++)s+=ln(x0+k*cw,y0+5,x0+k*cw,yB,.08,GR);
+ for(let k=0;k<Nw;k++)s+=tx(x0+(k+.5)*cw,y0+8.6,k+1,fs);
  [[0,'Rencana mingguan (%)',J.plan],[1,'Rencana kumulatif (%)',J.cum],[2,'Realisasi kumulatif (%)',J.act],[3,'Deviasi (%)',J.act.map((v,k)=>v==null?null:v-J.planAt(k+1))]].forEach(([i,l,a])=>{const y=bodyB+i*fh;
   s+=ln(14,y,x1,y,.15)+tx(17,y+fh/2+.6,l,1.65,{a:'start',b:i==2});for(let k=0;k<Nw;k++)if(a[k]!=null)s+=tx(x0+(k+.5)*cw,y+fh/2+.55,fmt(a[k],1),vs,{c:i==3&&a[k]<-.05?'#b91c1c':undefined})});
  s+=ln(20,y0,20,yB,.2)+ln(72,y0,72,yB,.2)+ln(x0,y0,x0,yB,.3);
@@ -986,11 +1006,51 @@ function kurvaSVG(J,wSel){
  if(J.W){const ap=J.wk.map(k=>[x0+k*cw,yv(J.act[k-1])]);s+=pl([[x0,bodyB],...ap],'#1d4ed8',.55)+ap.map(p=>ci(p[0],p[1],.45,{f:'#1d4ed8'})).join('')}
  if(wSel)s+=ln(x0+Math.min(wSel,Nw)*cw,bodyT,x0+Math.min(wSel,Nw)*cw,bodyB,.3,'#1d4ed8','1 .8');
  s+=rc(14,y0,206,yB-y0,{s:INK,w:.4});
- const K=J.W?kpi(J,J.W):null,end=wDate(J,J.T,1);
- const notes=[`Mulai ${tgl(J.mulai,1)}, durasi ${J.T} minggu (± ${dec(J.T/4)} bulan), rencana selesai ${tgl(end,1)}.`,'Bobot = biaya item ÷ jumlah biaya pekerjaan RAB; dibagi rata selama durasi item.','Garis oranye: rencana kumulatif. Garis biru: realisasi kumulatif dari laporan progres mingguan.',
-  K?`Laporan terakhir minggu ke-${J.W}: rencana ${pc(K.pl)}%, realisasi ${pc(K.ac)}%, deviasi ${K.dev>=0?'+':''}${pc(K.dev)}%${K.spi?` (SPI ${fmt(K.spi,2)})`:''}.`:'Belum ada laporan progres.',`Nilai pekerjaan ${rp(J.r.jml)} (sebelum jasa, tak terduga & PPN).`];
- return sheet('K-01','Kurva S & jadwal','-',s,notes,'JADWAL & KURVA S','minggu / % bobot');
+ return{code,title,svg:sheet(code,title,'-',s,notes,'JADWAL & KURVA S','minggu / % bobot')};
 }
+function kurvaSheets(J,wSel){
+ const Nw=Math.max(J.T,J.W),wkOf=x=>{const a=Array(Nw).fill(0);for(let k=x.s;k<=x.e;k++)a[k-1]=x.w/x.d;return a};
+ const done=x=>wSel?J.pctAt(x.key,wSel)/100*x.d:0;
+ const grp=J.G.map((g,gi)=>{const it=J.rows.filter(x=>x.gi==gi);if(!it.length)return null;const wk=Array(Nw).fill(0);it.forEach(x=>wkOf(x).forEach((v,k)=>wk[k]+=v));
+  return{no:ROM[gi]||gi+1,n:g.n.replace('PEKERJAAN ',''),full:g.n,w:it.reduce((s,x)=>s+x.w,0),s:Math.min(...it.map(x=>x.s)),e:Math.max(...it.map(x=>x.e)),wk,dp:1,it}}).filter(Boolean);
+ const K=J.W?kpi(J,J.W):null,end=wDate(J,J.T,1);
+ const base=[`Mulai ${tgl(J.mulai,1)}, durasi ${J.T} minggu (± ${dec(J.T/4)} bulan), rencana selesai ${tgl(end,1)}.`,'Bobot = biaya item ÷ jumlah biaya pekerjaan RAB; dibagi rata selama durasi item.','Garis oranye: rencana kumulatif. Garis biru: realisasi kumulatif dari laporan progres mingguan.',
+  K?`Laporan terakhir minggu ke-${J.W}: rencana ${pc(K.pl)}%, realisasi ${pc(K.ac)}%, deviasi ${K.dev>=0?'+':''}${pc(K.dev)}%${K.spi?` (SPI ${fmt(K.spi,2)})`:''}.`:'Belum ada laporan progres.',`Nilai pekerjaan ${rp(J.r.jml)} (sebelum jasa, tak terduga & PPN).`];
+ const out=[kurvaPage(J,grp,wSel,'K-01','Kurva S rekap per kelompok',[...base,'Rincian per item pekerjaan ada di lembar K-02 dan seterusnya.'])];
+ const rows=[];grp.forEach(g=>{rows.push({h:1,no:g.no,n:g.full,w:g.w});g.it.forEach((x,j)=>rows.push({no:j+1,n:x.n,w:x.w,s:x.s,e:x.e,wk:wkOf(x),dp:2,done:done(x)}))});
+ const per=36,pages=[];let cur=[];
+ rows.forEach((x,i)=>{if(cur.length>=per||(x.h&&cur.length>=per-2)){pages.push(cur);cur=[]}cur.push(x)});if(cur.length)pages.push(cur);
+ pages.forEach((p,i)=>out.push(kurvaPage(J,p,wSel,'K-'+String(i+2).padStart(2,'0'),`Rincian kurva S per item (${i+1}/${pages.length})`,[`Breakdown ${J.rows.length} item pekerjaan RAB, halaman ${i+1} dari ${pages.length}.`,'Angka di dalam bar = bobot rencana mingguan item (%).',wSel?`Bar oranye tua = bagian yang sudah terealisasi s/d minggu ke-${wSel}.`:'Bar oranye tua muncul setelah ada laporan progres.',...base.slice(0,1),...base.slice(3,4)])));
+ return out;
+}
+const kurvaSVG=(J,w)=>kurvaSheets(J,w)[0].svg;
+
+/* ---------- Hitung urugan ----------
+   Volume padat (rencana) = luas × tebal padat. Susut dihitung terhadap volume lepas (di bak truk):
+   volume lepas = padat ÷ (1 − susut padat); volume tergelar = lepas × (1 − susut tergelar); tebal hampar = tebal padat × (1 − susut tergelar) ÷ (1 − susut padat).
+   URG: [nama, susut tergelar %, susut tergelar padat %, harga per m³ lepas, tebal padat maks per lapis (m)] */
+const URG={tanah:['Tanah urug',10,25,150000,.2],pilihan:['Urugan pilihan (selected fill)',8,22,210000,.2],sirtu:['Sirtu (pasir batu)',5,20,260000,.2],
+ lpa:['LPA (lapis pondasi agregat kelas A)',5,25,380000,.15],lpb:['LPB (lapis pondasi agregat kelas B)',5,22,330000,.15],lpc:['LPC (lapis pondasi agregat kelas C)',5,20,290000,.2]};
+const UMODE=[['plt','P × L × T'],['luas','Luas × tebal'],['sisi','Sisi lahan (4 sisi + diagonal)'],['kel','Keliling × lebar jalur']];
+const UPAH_URUG=55000;
+const urugNew=()=>({n:'Urugan lahan',m:'tanah',mode:'plt',A:0,P:10,L:7,a:0,b:0,c:0,d:0,e:0,K:0,lb:1,T:.5,titik:''});
+function hitUrug(o){
+ const n=x=>Math.max(0,num(x)),M=URG[o.m]||URG.tanah,ix=num(S.I.idx)||1,her=(x,y,z)=>{const s=(x+y+z)/2,q=s*(s-x)*(s-y)*(s-z);return q>0?Math.sqrt(q):0};
+ let A=0,ket='',warn='';
+ if(o.mode=='luas')A=n(o.A);
+ else if(o.mode=='plt'){A=n(o.P)*n(o.L);ket=`${dec(n(o.P))} × ${dec(n(o.L))}`}
+ else if(o.mode=='kel'){A=n(o.K)*n(o.lb);ket=`keliling ${dec(n(o.K))} × lebar ${dec(n(o.lb))}`}
+ else{const[a,b,c,d,e]=[o.a,o.b,o.c,o.d,o.e].map(n);
+  if(e>0){const t1=her(a,b,e),t2=her(c,d,e);A=t1+t2;ket=`ΔABC (${dec(a)}, ${dec(b)}, diag ${dec(e)}) + ΔACD (${dec(c)}, ${dec(d)}, diag ${dec(e)})`;if(a&&b&&c&&d&&(!t1||!t2))warn='Sisi & diagonal tidak membentuk segitiga — cek ukuran.'}
+  else{const s=(a+b+c+d)/2,q=(s-a)*(s-b)*(s-c)*(s-d);A=q>0?Math.sqrt(q):0;ket='rumus Brahmagupta';if(A)warn='Tanpa diagonal luas dianggap maksimum (lahan hampir siku). Ukur diagonal A–C agar akurat.'}}
+ const pts=String(o.titik||'').split(/[;\s]+/).filter(Boolean).map(numIn).filter(v=>v>0);
+ const T=pts.length?pts.reduce((s,v)=>s+v,0)/pts.length:n(o.T);
+ const sg=clamp(o.sg!=null?num(o.sg):M[1],0,90)/100,sp=clamp(o.sp!=null?num(o.sp):M[2],0,90)/100,h=o.h!=null?num(o.h):Math.round(M[3]*ix),uh=o.uh!=null?num(o.uh):Math.round(UPAH_URUG*ix);
+ if(sp<sg)warn=(warn?warn+' ':'')+'Susut tergelar padat biasanya lebih besar dari susut tergelar.';
+ const Vp=A*T,Vl=Vp/(1-sp),Vg=Vl*(1-sg),Tg=T*(1-sg)/(1-sp),lap=T>0?Math.ceil(T/M[4]-1e-9):0,tr=Math.max(.5,num(S.urugTruk)||7),rit=Math.ceil(Vl/tr-1e-9),bm=Math.round(Vl*h),bu=Math.round(Vp*uh),tot=bm+bu;
+ return{M,A,T,pts,sg,sp,h,uh,Vp,Vl,Vg,Tg,lap,rit,tr,bm,bu,tot,hpm:Vp?tot/Vp:0,ket,warn,ov:o.sg!=null||o.sp!=null||o.h!=null||o.uh!=null};
+}
+const udesc=o=>{const x=hitUrug(o);return(o.mode=='luas'?'luas '+dec(x.A)+' m²':x.ket)+` · tebal ${dec(x.T)} m${x.pts.length?` (rata-rata ${x.pts.length} titik)`:''}`};
 
 /* ---------- Form input ---------- */
 function renderForm(){
@@ -1025,7 +1085,7 @@ $('#form').addEventListener('click',e=>{
 
 /* ---------- Hasil ---------- */
 let RES;
-const TABS=[['ringkas','Ringkasan'],['rab','RAB Detail'],['jadwal','Jadwal & Kurva S'],['rap','RAP'],['progres','Update Progres'],['gambar','Gambar Kerja'],['spek','Spesifikasi Teknis'],['material','Daftar Material & Upah'],['harga','Harga Dasar'],['analisa','Analisa Harga Satuan'],['asumsi','Asumsi & Cara Hitung']];
+const TABS=[['ringkas','Ringkasan'],['rab','RAB Detail'],['jadwal','Jadwal & Kurva S'],['rap','RAP'],['progres','Update Progres'],['urugan','Hitung Urugan'],['gambar','Gambar Kerja'],['spek','Spesifikasi Teknis'],['material','Daftar Material & Upah'],['harga','Harga Dasar'],['analisa','Analisa Harga Satuan'],['asumsi','Asumsi & Cara Hitung']];
 function update(){RES=hitung();save();renderCards();renderView()}
 function renderCards(){
  const r=RES,D=r.D;
@@ -1050,11 +1110,11 @@ function rekapRows(r,cls=''){
 function matSplit(r){const o={b:0,u:0,s:0};for(const[id,q]of Object.entries(r.M))o[R[id].k]+=q*price(id);return o}
 
 function renderView(){
- const a=document.activeElement,fk=a&&a.dataset&&a.dataset.fk;renderView0();
+ const a=document.activeElement,fk=a&&a.dataset&&a.dataset.fk;renderView0(tab,$('#view'));
  if(fk){const el=document.querySelector(`#view [data-fk="${CSS.escape(fk)}"]`);if(el){el.focus();el.select&&el.select()}}
 }
-function renderView0(){
- const r=RES,D=r.D,v=$('#view');
+function renderView0(tab,v){
+ const r=RES,D=r.D;
  if(tab=='ringkas'){
   const ms=matSplit(r),mt=ms.b+ms.u+ms.s||1;
   v.innerHTML=`<div class="grid2">
@@ -1101,7 +1161,7 @@ function renderView0(){
    <span class="mute">otomatis ${D.bln*4} mg · selesai ${tgl(wDate(J,J.T,1),1)}</span>
    <span style="margin-left:auto;display:flex;gap:6px">${Object.keys(S.sch).length?'<button class="btn sm" id="bSchReset">↺ Jadwal otomatis</button>':''}<button class="btn p sm" id="bPrintK">🖨 Cetak Kurva S</button></span></div>
    <p class="note" style="margin:8px 0 0">Jadwal dibuat otomatis dari item RAB mengikuti urutan kerja (persiapan → pondasi → struktur → dinding → atap → finishing). Bobot = biaya item ÷ jumlah biaya pekerjaan. Mulai & durasi tiap item boleh diubah (kotak oranye), kurva S ikut berubah. Realisasi diisi di tab <b>Update Progres</b>.</p></div>
-  <div class="panel" style="margin-bottom:12px"><div class="paper" data-kz="1">${kurvaSVG(J,J.W)}</div></div>
+  <div class="sheets" style="margin-bottom:12px">${(window.__KS=kurvaSheets(J,J.W)).map((g,i)=>`<div class="sh"><div class="shh"><b>${g.code}</b>${esc(g.title)}</div><div class="paper" data-kz="${i}">${g.svg}</div></div>`).join('')}</div>
   <div class="panel"><table class="gt"><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Bobot %</th><th>Mulai</th><th>Durasi</th>${hd.map(k=>`<th class="c" title="${tgl(wDate(J,k))} – ${tgl(wDate(J,k,1))}">${k}</th>`).join('')}</tr>`;
   r.G.forEach((g,gi)=>{
    const it=J.rows.filter(x=>x.gi==gi);
@@ -1174,6 +1234,43 @@ function renderView0(){
    <div style="margin-top:8px"><button class="btn p sm" id="bPrintR">🖨 Cetak RAP</button></div></div>`;
   v.innerHTML=h;
  }
+ else if(tab=='urugan'){
+  const U=S.urug,vv=x=>esc(String(x??'').replace('.',','));
+  const fi=(i,f,l,val,u,o={})=>`<label>${l}<span><input type="text" inputmode="decimal" data-u="${i}" data-f="${f}" data-fk="u${i}${f}" value="${o.raw?esc(val):vv(val)}" class="${o.c||''}"${o.ph?` placeholder="${o.ph}"`:''}>${u?`<em>${u}</em>`:''}</span></label>`;
+  let h=`<div class="panel" style="margin-bottom:12px"><div class="ctl"><b style="font-size:15px">Hitung kebutuhan urugan</b>
+   <label>Kapasitas dump truck <input type="text" inputmode="decimal" data-ug="truk" data-fk="utruk" value="${vv(S.urugTruk)}" style="width:56px;text-align:right"> m³</label>
+   <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" id="bUAdd">＋ Tambah area urugan</button>${U.length?'<button class="btn p sm" id="bURab">⇢ Masukkan ke RAB</button>':''}</span></div>
+   <p class="note" style="margin:8px 0 0">Isi ukuran (P × L, luas, 4 sisi + diagonal, atau keliling × lebar jalur) dan tebal/kedalaman padat. Bila kedalaman tidak rata, isi beberapa titik ukur (pisahkan dengan ; ) — dipakai rata-ratanya. Material saat dihampar dan dipadatkan menyusut ±20–30% (tergantung jenis), sehingga volume yang dibeli/diangkut lebih besar dari volume padat. Koefisien & harga default bisa diubah (kotak oranye).</p></div>`;
+  if(!U.length)h+=`<div class="panel note">Belum ada area urugan. Klik <b>＋ Tambah area urugan</b>.</div>`;
+  U.forEach((o,i)=>{const x=hitUrug(o),M=x.M;
+   let dims=o.mode=='plt'?fi(i,'P','Panjang',o.P,'m')+fi(i,'L','Lebar',o.L,'m'):o.mode=='luas'?fi(i,'A','Luas lahan',o.A,'m²'):o.mode=='kel'?fi(i,'K','Keliling lahan',o.K,'m')+fi(i,'lb','Lebar jalur urugan',o.lb,'m'):
+    fi(i,'a','Sisi A–B (depan)',o.a,'m')+fi(i,'b','Sisi B–C (kanan)',o.b,'m')+fi(i,'c','Sisi C–D (belakang)',o.c,'m')+fi(i,'d','Sisi D–A (kiri)',o.d,'m')+fi(i,'e','Diagonal A–C',o.e,'m');
+   h+=`<div class="panel"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><h3 style="margin:0;flex:1">${i+1}. ${esc(o.n||'Urugan')}</h3>${x.ov?`<button class="btn sm" data-ureset="${i}">↺ Koefisien & harga default</button>`:''}<button class="btn sm" data-udel="${i}">Hapus</button></div>
+   <div class="ug"><label>Nama area<span><input type="text" data-u="${i}" data-f="n" value="${esc(o.n)}"></span></label>
+    <label>Material urugan<span><select data-u="${i}" data-f="m">${Object.entries(URG).map(([k,m])=>`<option value="${k}" ${k==o.m?'selected':''}>${m[0]}</option>`).join('')}</select></span></label>
+    <label>Cara hitung<span><select data-u="${i}" data-f="mode">${UMODE.map(m=>`<option value="${m[0]}" ${m[0]==o.mode?'selected':''}>${m[1]}</option>`).join('')}</select></span></label>
+    ${dims}${fi(i,'T','Tebal / kedalaman padat',o.T,'m')}
+    <label>Titik ukur kedalaman (opsional)<span><input type="text" data-u="${i}" data-f="titik" data-fk="u${i}titik" value="${esc(o.titik||'')}" placeholder="mis. 0,4; 0,6; 0,5"></span></label>
+    ${fi(i,'sg','Susut saat tergelar',dec(x.sg*100),'%',{c:o.sg!=null?'ov':''})}${fi(i,'sp','Susut tergelar padat',dec(x.sp*100),'%',{c:o.sp!=null?'ov':''})}
+    ${fi(i,'h','Harga material / m³ lepas',fmt(x.h),'Rp',{c:o.h!=null?'ov':'',raw:1})}${fi(i,'uh','Upah hampar + padat / m³',fmt(x.uh),'Rp',{c:o.uh!=null?'ov':'',raw:1})}</div>
+   ${x.warn?`<p class="note dn" style="margin:8px 0 0">⚠ ${esc(x.warn)}</p>`:''}
+   <div class="ures">
+    <div><small>Luas area</small><b>${dec(x.A)} m²</b><small>${esc(x.ket)}</small></div>
+    <div><small>Tebal padat${x.pts.length?` (rata-rata ${x.pts.length} titik)`:''}</small><b>${dec(+x.T.toFixed(3))} m</b><small>${x.lap} lapis × maks ${dec(M[4])} m padat</small></div>
+    <div><small>Volume padat (rencana)</small><b>${dec(x.Vp)} m³</b><small>luas × tebal</small></div>
+    <div><small>Volume tergelar (gembur)</small><b>${dec(x.Vg)} m³</b><small>tebal hampar ± ${dec(+x.Tg.toFixed(3))} m sebelum dipadatkan</small></div>
+    <div class="hi"><small>Volume beli / angkut (lepas)</small><b>${dec(x.Vl)} m³</b><small>= ${dec(x.Vp)} ÷ (1 − ${dec(x.sp*100)}%) · faktor ${fmt(1/(1-x.sp),2)}</small></div>
+    <div><small>Ritase dump truck</small><b>${fmt(x.rit)} rit</b><small>@ ${dec(x.tr)} m³ lepas</small></div>
+    <div><small>Biaya material</small><b>${rp(x.bm)}</b><small>${dec(x.Vl)} m³ × ${fmt(x.h)}</small></div>
+    <div><small>Upah hampar + padat</small><b>${rp(x.bu)}</b><small>${dec(x.Vp)} m³ × ${fmt(x.uh)}</small></div>
+    <div class="hi"><small>Total biaya urugan</small><b>${rp(x.tot)}</b><small>${rp(x.hpm)} per m³ padat</small></div></div></div>`});
+  if(U.length){const X2=U.map(hitUrug),sm=k=>X2.reduce((s,x)=>s+x[k],0);
+   h+=`<div class="panel" style="margin-top:12px"><h3>Rekap urugan</h3><table><tr><th>No</th><th>Area</th><th>Material</th><th>Ukuran</th><th class="n">Vol. padat</th><th class="n">Vol. tergelar</th><th class="n">Vol. lepas (beli)</th><th class="n">Ritase</th><th class="n">Total biaya</th></tr>
+   ${U.map((o,i)=>{const x=X2[i];return`<tr><td>${i+1}</td><td>${esc(o.n)}</td><td>${x.M[0]}</td><td class="mute">${esc(udesc(o))}</td><td class="n">${dec(x.Vp)}</td><td class="n">${dec(x.Vg)}</td><td class="n">${dec(x.Vl)}</td><td class="n">${fmt(x.rit)}</td><td class="n">${fmt(x.tot)}</td></tr>`}).join('')}
+   <tr class="tot"><td></td><td colspan="3">JUMLAH</td><td class="n">${dec(sm('Vp'))}</td><td class="n">${dec(sm('Vg'))}</td><td class="n">${dec(sm('Vl'))}</td><td class="n">${fmt(sm('rit'))}</td><td class="n">${fmt(sm('tot'))}</td></tr></table>
+   <p class="note">Tombol <b>Masukkan ke RAB</b> menambahkan tiap area sebagai pekerjaan tambahan (volume padat × harga per m³ padat) dan ikut masuk jadwal kurva S di awal proyek. Klik lagi setelah mengubah angka agar RAB terbarui.</p></div>`}
+  v.innerHTML=h;
+ }
  else if(tab=='gambar'){
   const SH=sheetsList(r);window.__SH=SH;
   v.innerHTML=`<div class="panel note" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:240px">${SH.length} lembar gambar kerja dibuat otomatis dari isian, dan volume RAB memakai denah yang sama. Klik gambar untuk memperbesar. Untuk perizinan (PBG) tetap perlu ditandatangani perencana bersertifikat.</span><button class="btn p sm" id="bPrintG">🖨 Cetak / PDF semua gambar</button></div>
@@ -1239,13 +1336,17 @@ $('#view').addEventListener('click',e=>{
  if(t.dataset.xdel!=null){S.extra.splice(+t.dataset.xdel,1);update();return}
  const gz=t.closest('[data-gz]');if(gz&&!t.closest('dialog')){const g=window.__SH[+gz.dataset.gz],d=$('#dlg');d.classList.add('big');d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b>${g.code} · ${esc(g.title)}</b><button class="btn sm" id="pClose" style="margin-left:auto">Tutup</button></div><div class="paper">${g.svg}</div>`;d.showModal();return}
  if(t.dataset.gs!=null){const g=window.__SH[+t.dataset.gs],a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n'+g.svg],{type:'image/svg+xml'}));a.download=`${g.code} ${g.title}.svg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);return}
+ if(t.id=='bUAdd'){S.urug.push(urugNew());update();return}
+ if(t.dataset.udel!=null){if(confirm('Hapus area urugan ini?')){S.urug.splice(+t.dataset.udel,1);update()}return}
+ if(t.dataset.ureset!=null){const o=S.urug[+t.dataset.ureset];['sg','sp','h','uh'].forEach(k=>delete o[k]);update();return}
+ if(t.id=='bURab'){S.extra=S.extra.filter(e=>e.src!='urug');let n=0;S.urug.forEach(o=>{const x=hitUrug(o);if(x.Vp>0){n++;S.extra.push({n:`Urugan ${x.M[0].split(' (')[0]} dipadatkan — ${o.n||'area'} (${udesc(o)}; vol. lepas ${dec(x.Vl)} m³)`,v:+x.Vp.toFixed(2),u:'m³',h:Math.round(x.hpm),bh:x.Vp?x.bm/x.Vp:0,src:'urug'})}});update();toast(n+' pekerjaan urugan masuk ke RAB (Pekerjaan Tambahan)');return}
  if(t.dataset.schr){delete S.sch[t.dataset.schr];update();return}
  if(t.id=='bSchReset'&&confirm('Kembalikan semua jadwal item ke otomatis?')){S.sch={};update();return}
- if(t.closest('[data-kz]')&&!t.closest('dialog')){const J=jadwal(RES),d=$('#dlg');d.classList.add('big');d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b>K-01 · Jadwal pelaksanaan & kurva S</b><button class="btn sm" id="pClose" style="margin-left:auto">Tutup</button></div><div class="paper">${kurvaSVG(J,J.W)}</div>`;d.showModal();return}
- if(t.id=='bPrintK'){const J=jadwal(RES);$('#print').innerHTML=`<div class="sheet">${kurvaSVG(J,J.W)}</div>`;window.print();return}
+ if(t.closest('[data-kz]')&&!t.closest('dialog')){const g=window.__KS[+t.closest('[data-kz]').dataset.kz],d=$('#dlg');d.classList.add('big');d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b>${g.code} · ${esc(g.title)}</b><button class="btn sm" id="pClose" style="margin-left:auto">Tutup</button></div><div class="paper">${g.svg}</div>`;d.showModal();return}
+ if(t.id=='bPrintK'){const J=jadwal(RES);$('#print').innerHTML=kurvaSheets(J,J.W).map(g=>`<div class="sheet">${g.svg}</div>`).join('');window.print();return}
  if(t.id=='bIsiRencana'){const J=jadwal(RES),w=selW(J),L=S.pg.lap[w]=S.pg.lap[w]||{};L.p=L.p||{};J.rows.forEach(x=>{const pl=Math.round(planItem(x,w)*10)/10;if(pl>J.pctAt(x.key,w))L.p[x.key]=pl});update();toast('Realisasi minggu '+w+' diisi sesuai rencana');return}
  if(t.id=='bHapusLap'){const w=selW(jadwal(RES));if(confirm('Hapus laporan minggu ke-'+w+'?')){delete S.pg.lap[w];update()}return}
- if(t.id=='bPrintP'){const J=jadwal(RES),w=selW(J);printView(`<h1>LAPORAN PROGRES MINGGU KE-${w}</h1><div style="text-align:center">${esc(S.I.nama)} · ${tgl(wDate(J,w),1)} – ${tgl(wDate(J,w,1),1)}${(S.pg.lap[w]||{}).cat?'<br>Catatan: '+esc(S.pg.lap[w].cat):''}</div>`,`<div class="sheet">${kurvaSVG(J,w)}</div>`);return}
+ if(t.id=='bPrintP'){const J=jadwal(RES),w=selW(J);printView(`<h1>LAPORAN PROGRES MINGGU KE-${w}</h1><div style="text-align:center">${esc(S.I.nama)} · ${tgl(wDate(J,w),1)} – ${tgl(wDate(J,w,1),1)}${(S.pg.lap[w]||{}).cat?'<br>Catatan: '+esc(S.pg.lap[w].cat):''}</div>`,kurvaSheets(J,w).map(g=>`<div class="sheet">${g.svg}</div>`).join(''));return}
  if(t.id=='bPrintR'){printView(`<h1>RENCANA ANGGARAN PELAKSANAAN (RAP)</h1><div style="text-align:center">${esc(S.I.nama)}${S.I.lokasi?' · '+esc(S.I.lokasi):''}</div>`);return}
  if(t.id=='bPrintG'){$('#print').innerHTML=window.__SH.map(g=>`<div class="sheet">${g.svg}</div>`).join('');window.print()}
 });
@@ -1262,6 +1363,12 @@ $('#view').addEventListener('change',e=>{
   else if(k=='T'){const x=Math.round(numIn(t.value));S.pg.T=x>=2&&x!=RES.D.bln*4?Math.min(x,260):0}
   else if(k=='mg')S.pg.mg=+t.value;
   else if(k=='cat'){const w=selW(jadwal(RES));(S.pg.lap[w]=S.pg.lap[w]||{}).cat=t.value}
+  return setTimeout(update)}
+ if(t.dataset.ug){S.urugTruk=numIn(t.value)||7;return setTimeout(update)}
+ if(t.dataset.u!=null){const o=S.urug[+t.dataset.u],f=t.dataset.f;
+  if(f=='n'||f=='titik')o[f]=t.value;else if(f=='m'){o.m=t.value;['sg','sp','h'].forEach(k=>delete o[k])}else if(f=='mode')o.mode=t.value;
+  else if(['sg','sp','h','uh'].includes(f)){if(t.value.trim()==='')delete o[f];else o[f]=f=='h'||f=='uh'?Math.round(num(t.value)):numIn(t.value)}
+  else o[f]=numIn(t.value);
   return setTimeout(update)}
  if(t.dataset.sch){const k=t.dataset.sch,x=jadwal(RES).rows.find(z=>z.key==k),o={s:x.s,d:x.d};o[t.dataset.f]=Math.max(1,Math.round(numIn(t.value)));if(o.s==x.as&&o.d==x.ad)delete S.sch[k];else S.sch[k]=o;return setTimeout(update)}
  if(t.dataset.pp||t.dataset.pb){const w=selW(jadwal(RES)),L=S.pg.lap[w]=S.pg.lap[w]||{};
@@ -1293,20 +1400,40 @@ $('#dlg').addEventListener('click',e=>{
  if(t.dataset.pd&&confirm('Hapus proyek "'+P[t.dataset.pd].name+'"?')){delete P[t.dataset.pd];LS.set('rab-projects-v1',P);projDlg()}
 });
 
-/* ---------- Cetak / PDF ---------- */
+/* ---------- Cetak / PDF lengkap: semua tab dirender ulang ke elemen sementara, input diganti teks ---------- */
+function cleanPrint(el){
+ el.querySelectorAll('input,select').forEach(x=>{const sp=document.createElement('span');sp.textContent=x.tagName=='SELECT'?(x.options[x.selectedIndex]||{}).text||'':x.value;x.replaceWith(sp)});
+ el.querySelectorAll('button,.paper,.sheets,.ctl').forEach(x=>x.remove());
+ return el.innerHTML;
+}
+function partHTML(tb){const d=document.createElement('div');renderView0(tb,d);return cleanPrint(d)}
 $('#bPdf').onclick=()=>{
- const r=RES,D=r.D,I=S.I;
+ const r=RES,D=r.D,I=S.I,J=jadwal(r),SH=sheetsList(r),KS=kurvaSheets(J,J.W);let no=0;
+ const H=t=>`<h2 class="brk">${++no}. ${t}</h2>`,sht=a=>a.map(g=>`<div class="sheet">${g.svg}</div>`).join('');
+ const spec=`${QN[I.kualitas]}, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'}, lantai ${I.lantaiFin}, atap ${I.atap=='beton'?'genteng beton':'genteng metal'} ${I.bentuk}, plafon ${I.plafon}`;
+ const toc=['Ringkasan & rekapitulasi','Rincian anggaran biaya (RAB)','Jadwal pelaksanaan & kurva S','Rencana anggaran pelaksanaan (RAP)','Laporan progres','Gambar kerja','Spesifikasi teknis','Daftar material & upah','Harga dasar','Analisa harga satuan (AHSP)','Asumsi & cara hitung',...(S.urug.length?['Perhitungan urugan']:[])];
  let h=`<h1>RENCANA ANGGARAN BIAYA (RAB)</h1><div style="text-align:center">${esc(I.nama)}</div>
- <table class="meta">${[['Pekerjaan',esc(I.nama)],['Pemilik',esc(I.pemilik)||'-'],['Lokasi',esc(I.lokasi)||'-'],['Luas bangunan',`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`],['Spesifikasi',`${QN[I.kualitas]}, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'}, lantai ${I.lantaiFin}, atap ${I.atap=='beton'?'genteng beton':'genteng metal'} ${I.bentuk}`],['Tanggal',new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})]].map(x=>`<tr><td>${x[0]}</td><td>: ${x[1]}</td></tr>`).join('')}</table>
- <h2>REKAPITULASI</h2><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Jumlah (Rp)</th></tr>
- ${r.G.map((g,i)=>`<tr><td>${ROM[i]}</td><td>${g.n}</td><td class="n">${fmt(g.sub)}</td></tr>`).join('')}${rekapRows(r)}</table>
- <p><i>Terbilang: ${terbilang(r.bul)}</i></p>
- <h2 class="brk">RINCIAN ANGGARAN BIAYA</h2><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Volume</th><th>Sat</th><th class="n">Harga satuan (Rp)</th><th class="n">Jumlah (Rp)</th></tr>`;
- r.G.forEach((g,i)=>{h+=`<tr class="g"><td>${ROM[i]}</td><td colspan="5">${g.n}</td></tr>`+g.it.map((x,j)=>`<tr><td>${j+1}</td><td>${esc(x.n)}</td><td class="n">${dec(x.v)}</td><td>${x.u}</td><td class="n">${fmt(x.hs)}</td><td class="n">${fmt(x.j)}</td></tr>`).join('')+`<tr class="st"><td></td><td colspan="4">Subtotal ${ROM[i]}</td><td class="n">${fmt(g.sub)}</td></tr>`});
- h+=`</table><h2 class="brk">DAFTAR KEBUTUHAN MATERIAL</h2><table><tr><th>Material</th><th class="n">Kebutuhan</th><th>Sat</th><th class="n">Kemasan</th></tr>`+
- Object.entries(r.M).filter(([id])=>R[id].k=='b').sort((a,b)=>b[1]*price(b[0])-a[1]*price(a[0])).map(([id,q])=>`<tr><td>${R[id].n}</td><td class="n">${dec(q<10?q.toFixed(2):Math.round(q))}</td><td>${R[id].u}</td><td class="n">${R[id].pk?'± '+fmt(Math.ceil(q/R[id].pk[0]))+' '+R[id].pk[1]:''}</td></tr>`).join('')+
- `</table><h2 class="brk">SPESIFIKASI TEKNIS</h2>`+spek(r).map((x,i)=>`<p style="margin:8px 0 2px"><b>${i+1}. ${x[0]}</b></p><ol class="spk" style="margin:0;padding-left:18px">${x[1].map(l=>`<li>${esc(l)}</li>`).join('')}</ol>`).join('')+`<div class="sign"><div>Disetujui,<br><br><br><br>( ${esc(I.pemilik)||'..............................'} )<br>Pemilik</div><div>Dibuat oleh,<br><br><br><br>( .............................. )<br>Perencana / Pelaksana</div></div>`;
- {const J=jadwal(r);h+=`<div class="sheet">${kurvaSVG(J,J.W)}</div>`}
+ <table class="meta">${[['Pekerjaan',esc(I.nama)],['Pemilik',esc(I.pemilik)||'-'],['Lokasi',esc(I.lokasi)||'-'],['Luas bangunan',`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`],['Spesifikasi',spec],['Nilai',`${rp(r.bul)} (${rp(D.At?r.bul/D.At:0)} / m²)`],['Jadwal',`${J.T} minggu, ${tgl(J.mulai,1)} – ${tgl(wDate(J,J.T,1),1)}`],['Tanggal',new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})]].map(x=>`<tr><td>${x[0]}</td><td>: ${x[1]}</td></tr>`).join('')}</table>
+ <p style="margin:10px 0 4px"><b>Daftar isi</b></p><ol style="margin:0;padding-left:18px">${toc.map(t=>`<li>${t}</li>`).join('')}</ol>`;
+ h+=H('RINGKASAN & REKAPITULASI')+partHTML('ringkas');
+ h+=H('RINCIAN ANGGARAN BIAYA (RAB)')+`<table><tr><th>No</th><th>Uraian pekerjaan & perhitungan volume</th><th class="n">Volume</th><th>Sat</th><th class="n">Harga satuan (Rp)</th><th class="n">Jumlah (Rp)</th></tr>`;
+ r.G.forEach((g,i)=>{h+=`<tr class="g"><td>${ROM[i]}</td><td colspan="5">${g.n}</td></tr>`+g.it.map((x,j)=>`<tr><td>${j+1}</td><td>${esc(x.n)}${x.an?` <span class="mute">[AHSP: ${esc(A[x.an].n)}]</span>`:''}<span class="fx">${esc(x.f)}${x.ov?` — volume diubah manual (otomatis ${dec(x.auto)})`:''}</span></td><td class="n">${dec(x.v)}</td><td>${x.u}</td><td class="n">${fmt(x.hs)}</td><td class="n">${fmt(x.j)}</td></tr>`).join('')+`<tr class="st"><td></td><td colspan="4">Subtotal ${ROM[i]}</td><td class="n">${fmt(g.sub)}</td></tr>`});
+ h+=`</table><table style="margin-top:8px">${rekapRows(r)}</table><p><i>Terbilang: ${terbilang(r.bul)}</i></p>`;
+ h+=H('JADWAL PELAKSANAAN & KURVA S')+`<table class="meta"><tr><td>Mulai</td><td>: ${tgl(J.mulai,1)}</td></tr><tr><td>Durasi</td><td>: ${J.T} minggu (± ${dec(J.T/4)} bulan)</td></tr><tr><td>Rencana selesai</td><td>: ${tgl(wDate(J,J.T,1),1)}</td></tr><tr><td>Lembar</td><td>: ${KS.map(g=>g.code+' '+g.title).join('; ')}</td></tr></table>
+  <table style="margin-top:8px"><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Bobot %</th><th class="n">Mulai</th><th class="n">Selesai</th><th class="n">Durasi</th><th>Tanggal</th></tr>${r.G.map((g,gi)=>`<tr class="g"><td>${ROM[gi]}</td><td colspan="6">${g.n}</td></tr>`+J.rows.filter(x=>x.gi==gi).map((x,j)=>`<tr><td>${j+1}</td><td>${esc(x.n)}</td><td class="n">${pc(x.w)}</td><td class="n">M${x.s}</td><td class="n">M${x.e}</td><td class="n">${x.d} mg</td><td>${tgl(wDate(J,x.s))} – ${tgl(wDate(J,x.e,1),1)}</td></tr>`).join('')).join('')}</table>`+sht(KS);
+ h+=H('RENCANA ANGGARAN PELAKSANAAN (RAP)')+partHTML('rap');
+ h+=H('LAPORAN PROGRES');
+ if(J.W){const mg=S.pg.mg;S.pg.mg=J.W;h+=`<p>Laporan terakhir: minggu ke-${J.W} (${tgl(wDate(J,J.W),1)} – ${tgl(wDate(J,J.W,1),1)})</p>`+partHTML('progres');S.pg.mg=mg;
+  h+=`<h2>Riwayat laporan mingguan</h2><table><tr><th>Minggu</th><th>Periode</th><th class="n">Rencana kum. %</th><th class="n">Realisasi kum. %</th><th class="n">Deviasi %</th><th class="n">Biaya keluar kum.</th><th>Catatan</th></tr>${J.wk.map(k=>`<tr><td>${k}</td><td>${tgl(wDate(J,k))} – ${tgl(wDate(J,k,1),1)}</td><td class="n">${pc(J.planAt(k))}</td><td class="n">${pc(J.act[k-1])}</td><td class="n">${pc(J.act[k-1]-J.planAt(k))}</td><td class="n">${fmt(J.biaya[k-1])}</td><td>${esc((S.pg.lap[k]||{}).cat||'')}</td></tr>`).join('')}</table>`}
+ else h+=`<p>Belum ada laporan progres. Rencana progres kumulatif per minggu:</p><table><tr><th>Minggu</th><th>Periode</th><th class="n">Rencana mingguan %</th><th class="n">Rencana kumulatif %</th></tr>${J.plan.map((v,k)=>`<tr><td>${k+1}</td><td>${tgl(wDate(J,k+1))} – ${tgl(wDate(J,k+1,1),1)}</td><td class="n">${pc(v)}</td><td class="n">${pc(J.cum[k])}</td></tr>`).join('')}</table>`;
+ h+=H('GAMBAR KERJA')+`<table><tr><th>No. lembar</th><th>Judul</th><th>Skala</th></tr>${SH.map(g=>`<tr><td>${g.code}</td><td>${esc(g.title)}</td><td>${g.sc}</td></tr>`).join('')}</table>`+sht(SH);
+ h+=H('SPESIFIKASI TEKNIS')+spek(r).map((x,i)=>`<p style="margin:8px 0 2px"><b>${i+1}. ${x[0]}</b></p><ol class="spk" style="margin:0;padding-left:18px">${x[1].map(l=>`<li>${esc(l)}</li>`).join('')}</ol>`).join('');
+ h+=H('DAFTAR MATERIAL & UPAH')+partHTML('material');
+ h+=H('HARGA DASAR BAHAN, UPAH & BORONGAN')+partHTML('harga');
+ h+=H('ANALISA HARGA SATUAN PEKERJAAN (AHSP)')+partHTML('analisa');
+ h+=H('ASUMSI & CARA HITUNG')+partHTML('asumsi');
+ if(S.urug.length)h+=H('PERHITUNGAN URUGAN')+partHTML('urugan');
+ h+=`<div class="sign"><div>Disetujui,<br><br><br><br>( ${esc(I.pemilik)||'..............................'} )<br>Pemilik</div><div>Dibuat oleh,<br><br><br><br>( .............................. )<br>Perencana / Pelaksana</div></div>`;
  $('#print').innerHTML=h;window.print();
 };
 
@@ -1318,7 +1445,7 @@ $('#bXls').onclick=async()=>{
  const put=(ws,addr,v,z)=>{ws[addr]=typeof v=='object'&&v&&v.f?{t:'n',f:v.f,z}:typeof v=='number'?{t:'n',v,z}:{t:'s',v:String(v??'')}};
  const fin=(ws,rows,cols,w)=>{ws['!ref']=X.utils.encode_range({s:{r:0,c:0},e:{r:rows,c:cols-1}});ws['!cols']=w.map(x=>({wch:x}))};
  // Harga dasar
- const used=Object.keys(R).filter(id=>Object.values(A).some(a=>a.r[id]!=null));
+ const used=Object.keys(R);
  const wh={};let y=1;const HR={};
  put(wh,'A1','HARGA DASAR BAHAN, UPAH & BORONGAN');put(wh,'A2',`Kualitas ${QN[I.kualitas]} · indeks wilayah ${dec(num(I.idx)||1)} — ubah kolom D, Analisa & RAB ikut berubah`);
  y=4;['Kode','Uraian','Satuan','Harga (Rp)','Jenis'].forEach((t,c)=>put(wh,X.utils.encode_cell({r:y-1,c}),t));
@@ -1335,10 +1462,10 @@ $('#bXls').onclick=async()=>{
  // RAB
  const wr={};y=1;put(wr,'A1','RENCANA ANGGARAN BIAYA (RAB)');
  [['Pekerjaan',I.nama],['Pemilik',I.pemilik||'-'],['Lokasi',I.lokasi||'-'],['Luas bangunan',`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`]].forEach((x,i)=>{put(wr,'A'+(i+2),x[0]);put(wr,'B'+(i+2),': '+x[1])});
- y=7;['No','Uraian pekerjaan','Volume','Satuan','Harga satuan (Rp)','Jumlah (Rp)'].forEach((t,c)=>put(wr,X.utils.encode_cell({r:y-1,c}),t));
+ y=7;['No','Uraian pekerjaan','Volume','Satuan','Harga satuan (Rp)','Jumlah (Rp)','Perhitungan volume / keterangan','AHSP'].forEach((t,c)=>put(wr,X.utils.encode_cell({r:y-1,c}),t));
  const subs=[],RR={};
  r.G.forEach((g,i)=>{y++;put(wr,'A'+y,ROM[i]);put(wr,'B'+y,g.n);const a=y+1;
-  g.it.forEach((x,j)=>{y++;RR[x.key]=y;put(wr,'A'+y,j+1);put(wr,'B'+y,x.n);put(wr,'C'+y,x.v,NF2);put(wr,'D'+y,x.u);put(wr,'E'+y,x.an?{f:`'Analisa'!E${AR[x.an]}`}:x.hs,NF);put(wr,'F'+y,{f:`ROUND(C${y}*E${y},0)`},NF)});
+  g.it.forEach((x,j)=>{y++;RR[x.key]=y;put(wr,'G'+y,x.f||'');put(wr,'H'+y,x.an?A[x.an].n:'');put(wr,'A'+y,j+1);put(wr,'B'+y,x.n);put(wr,'C'+y,x.v,NF2);put(wr,'D'+y,x.u);put(wr,'E'+y,x.an?{f:`'Analisa'!E${AR[x.an]}`}:x.hs,NF);put(wr,'F'+y,{f:`ROUND(C${y}*E${y},0)`},NF)});
   y++;put(wr,'B'+y,'Subtotal '+ROM[i]);put(wr,'F'+y,{f:`SUM(F${a}:F${y-1})`},NF);subs.push(y)});
  y+=2;const yJ=y;put(wr,'B'+y,'JUMLAH BIAYA PEKERJAAN');put(wr,'F'+y,{f:subs.map(s=>'F'+s).join('+')},NF);
  y++;const yJs=y;put(wr,'B'+y,'Jasa kontraktor (%)');put(wr,'E'+y,num(I.jasa)/100,'0%');put(wr,'F'+y,{f:`ROUND(F${yJ}*E${y},0)`},NF);
@@ -1347,7 +1474,7 @@ $('#bXls').onclick=async()=>{
  y++;const yTot=y;put(wr,'B'+y,'TOTAL');put(wr,'F'+y,{f:`F${yJ}+F${yJs}+F${yT}+F${yP}`},NF);
  y++;put(wr,'B'+y,'DIBULATKAN');put(wr,'F'+y,{f:`ROUNDUP(F${yTot},-3)`},NF);
  y++;put(wr,'B'+y,'Terbilang: '+terbilang(r.bul));
- fin(wr,y,6,[6,52,11,8,17,18]);
+ fin(wr,y,8,[6,52,11,8,17,18,70,40]);
  // Material
  const wm={};put(wm,'A1','DAFTAR KEBUTUHAN MATERIAL, UPAH & BORONGAN');y=3;['Uraian','Kebutuhan','Satuan','Kemasan','Harga (Rp)','Total (Rp)','Jenis'].forEach((t,c)=>put(wm,X.utils.encode_cell({r:y-1,c}),t));
  Object.entries(r.M).sort((a,b)=>'bus'.indexOf(R[a[0]].k)-'bus'.indexOf(R[b[0]].k)||b[1]*price(b[0])-a[1]*price(a[0])).forEach(([id,q])=>{y++;const pk=R[id].pk;put(wm,'A'+y,R[id].n);put(wm,'B'+y,+q.toFixed(3),NF2);put(wm,'C'+y,R[id].u);put(wm,'D'+y,pk?'± '+Math.ceil(q/pk[0])+' '+pk[1]:'');put(wm,'E'+y,{f:`'Harga Dasar'!D${HR[id]}`},NF);put(wm,'F'+y,{f:`ROUND(B${y}*E${y},0)`},NF);put(wm,'G'+y,{u:'Upah',b:'Bahan',s:'Borongan'}[R[id].k])});
@@ -1387,7 +1514,45 @@ $('#bXls').onclick=async()=>{
  for(let k=1;k<=Math.max(J.T,J.W);k++){y++;put(wg,'A'+y,k);put(wg,'B'+y,`${tgl(wDate(J,k))} – ${tgl(wDate(J,k,1),1)}`);put(wg,'C'+y,+(J.planAt(k)/100).toFixed(6),'0.00%');
   if(J.act[k-1]!=null){put(wg,'D'+y,+(J.act[k-1]/100).toFixed(6),'0.00%');put(wg,'E'+y,{f:`D${y}-C${y}`},'0.00%');put(wg,'F'+y,J.biaya[k-1],NF)}put(wg,'G'+y,(S.pg.lap[k]||{}).cat||'')}
  fin(wg,y,7,[10,26,16,18,10,20,50]);
- X.utils.book_append_sheet(wb,wr,'RAB');X.utils.book_append_sheet(wb,wk,'Kurva S');X.utils.book_append_sheet(wb,wp,'RAP');X.utils.book_append_sheet(wb,wg,'Progres');X.utils.book_append_sheet(wb,wa,'Analisa');X.utils.book_append_sheet(wb,wm,'Material');X.utils.book_append_sheet(wb,wh,'Harga Dasar');X.utils.book_append_sheet(wb,wsp,'Spesifikasi');
+ // Ringkasan (rumus mengambil subtotal dari sheet RAB dan komposisi dari sheet Material)
+ const wsr={};put(wsr,'A1','RINGKASAN RENCANA ANGGARAN BIAYA');
+ [['Pekerjaan',I.nama],['Pemilik',I.pemilik||'-'],['Lokasi',I.lokasi||'-'],['Luas bangunan',`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`],['Spesifikasi',`${QN[I.kualitas]}, dinding ${I.dinding=='hebel'?'bata ringan':'bata merah'}, lantai ${I.lantaiFin}, atap ${I.atap=='beton'?'genteng beton':'genteng metal'} ${I.bentuk}, plafon ${I.plafon}`],['Jadwal',`${J.T} minggu, ${tgl(J.mulai,1)} – ${tgl(wDate(J,J.T,1),1)}`]].forEach((x,i)=>{put(wsr,'A'+(i+3),x[0]);put(wsr,'B'+(i+3),x[1])});
+ y=11;['No','Uraian pekerjaan','Jumlah (Rp)','Porsi'].forEach((t,c)=>put(wsr,EC(c)+y,t));
+ r.G.forEach((g,i)=>{y++;put(wsr,'A'+y,ROM[i]);put(wsr,'B'+y,g.n);put(wsr,'C'+y,{f:`'RAB'!F${subs[i]}`},NF);put(wsr,'D'+y,{f:`C${y}/'RAB'!F${yJ}`},'0.0%')});
+ y++;put(wsr,'B'+y,'JUMLAH BIAYA PEKERJAAN');put(wsr,'C'+y,{f:`'RAB'!F${yJ}`},NF);
+ [[yJs,'Jasa kontraktor'],[yT,'Biaya tak terduga'],[yP,'PPN'],[yTot,'TOTAL'],[yTot+1,'DIBULATKAN']].forEach(([ry,l])=>{y++;put(wsr,'B'+y,l);put(wsr,'C'+y,{f:`'RAB'!F${ry}`},NF)});
+ y++;put(wsr,'B'+y,'Biaya per m² bangunan');put(wsr,'C'+y,{f:`ROUND(C${y-1}/${D.At||1},0)`},NF);
+ y++;put(wsr,'B'+y,'Terbilang: '+terbilang(r.bul));
+ y+=2;put(wsr,'B'+y,'KOMPOSISI BIAYA PEKERJAAN');['Bahan','Upah','Borongan'].forEach(k=>{y++;put(wsr,'B'+y,k);put(wsr,'C'+y,{f:`SUMIF('Material'!G:G,"${k}",'Material'!F:F)`},NF);put(wsr,'D'+y,{f:`C${y}/'RAB'!F${yJ}`},'0.0%')});
+ fin(wsr,y,4,[6,60,18,9]);
+ // Daftar gambar
+ const SHx=sheetsList(r),wgb={};put(wgb,'A1','DAFTAR GAMBAR KERJA');put(wgb,'A2','Gambar vektor lengkap ada di PDF (tombol PDF / Cetak) dan tab Gambar Kerja (unduh SVG per lembar).');
+ ['No. lembar','Judul gambar','Skala','Catatan pada lembar'].forEach((t,c)=>put(wgb,EC(c)+'4',t));y=4;
+ SHx.forEach(g=>{y++;put(wgb,'A'+y,g.code);put(wgb,'B'+y,g.title);put(wgb,'C'+y,g.sc);put(wgb,'D'+y,(g.notes||[]).join(' • '))});
+ kurvaSheets(J,J.W).forEach(g=>{y++;put(wgb,'A'+y,g.code);put(wgb,'B'+y,g.title);put(wgb,'C'+y,'-');put(wgb,'D'+y,'Jadwal & kurva S — lihat juga sheet "Kurva S"')});
+ fin(wgb,y,4,[11,42,16,160]);
+ // Asumsi & cara hitung (diambil dari tab yang sama agar selalu sinkron)
+ const da=document.createElement('div');renderView0('asumsi',da);const was={};put(was,'A1','ASUMSI & CARA HITUNG');y=3;put(was,'A'+y,'HASIL HITUNG GEOMETRI');
+ da.querySelectorAll('table.kv tr').forEach(tr=>{y++;put(was,'A'+y,tr.cells[0].textContent);put(was,'B'+y,tr.cells[1].textContent)});
+ y+=2;put(was,'A'+y,'ASUMSI YANG DIPAKAI');da.querySelectorAll('.note p').forEach(p=>{y++;put(was,'A'+y,p.textContent.replace(/\s+/g,' ').trim())});
+ y+=2;put(was,'A'+y,'CARA HITUNG');['Volume pekerjaan dihitung dari isian & denah otomatis (kolom "Perhitungan volume" di sheet RAB).','Harga satuan = Σ koefisien × harga dasar (sheet Analisa → Harga Dasar). Ubah harga di sheet Harga Dasar, semua ikut berubah.','Jumlah = volume × harga satuan; total = jumlah + jasa + tak terduga (+ PPN), dibulatkan ke ribuan.','Bobot kurva S = jumlah item ÷ jumlah biaya pekerjaan, disebar rata selama durasi item.','RAP = biaya langsung per item dipecah bahan/upah/borongan; laba = nilai kontrak − RAP.'].forEach(t=>{y++;put(was,'A'+y,t)});
+ fin(was,y,2,[70,30]);
+ // Urugan
+ let wu=null;if(S.urug.length){wu={};put(wu,'A1','PERHITUNGAN KEBUTUHAN URUGAN');put(wu,'A2','Kapasitas dump truck (m³)');put(wu,'C2',num(S.urugTruk)||7,NF2);
+  ['No','Area','Material','Ukuran','Luas (m²)','Tebal padat (m)','Vol. padat (m³)','Susut tergelar','Susut padat','Vol. lepas/beli (m³)','Vol. tergelar (m³)','Tebal hampar (m)','Ritase','Harga /m³ lepas','Upah /m³ padat','Biaya material','Upah','Total','Harga /m³ padat'].forEach((t,c)=>put(wu,EC(c)+'4',t));y=4;
+  S.urug.forEach((o,i)=>{const x=hitUrug(o);y++;put(wu,'A'+y,i+1);put(wu,'B'+y,o.n);put(wu,'C'+y,x.M[0]);put(wu,'D'+y,udesc(o));put(wu,'E'+y,+x.A.toFixed(3),NF2);put(wu,'F'+y,+x.T.toFixed(3),'0.000');
+   put(wu,'G'+y,{f:`E${y}*F${y}`},NF2);put(wu,'H'+y,x.sg,'0%');put(wu,'I'+y,x.sp,'0%');put(wu,'J'+y,{f:`G${y}/(1-I${y})`},NF2);put(wu,'K'+y,{f:`J${y}*(1-H${y})`},NF2);put(wu,'L'+y,{f:`F${y}*(1-H${y})/(1-I${y})`},'0.000');
+   put(wu,'M'+y,{f:`ROUNDUP(J${y}/$C$2,0)`},NF);put(wu,'N'+y,x.h,NF);put(wu,'O'+y,x.uh,NF);put(wu,'P'+y,{f:`ROUND(J${y}*N${y},0)`},NF);put(wu,'Q'+y,{f:`ROUND(G${y}*O${y},0)`},NF);put(wu,'R'+y,{f:`P${y}+Q${y}`},NF);put(wu,'S'+y,{f:`IF(G${y}>0,ROUND(R${y}/G${y},0),0)`},NF)});
+  const yu=y+1;put(wu,'B'+yu,'JUMLAH');'GJKMPQR'.split('').forEach(cl=>put(wu,cl+yu,{f:`SUM(${cl}5:${cl}${y})`},cl=='M'?NF:cl>'L'?NF:NF2));
+  y=yu+2;put(wu,'A'+y,'Vol. lepas = vol. padat ÷ (1 − susut padat); vol. tergelar = vol. lepas × (1 − susut tergelar); tebal hampar = tebal padat × (1 − susut tergelar) ÷ (1 − susut padat).');
+  fin(wu,y,19,[5,22,30,40,10,10,12,10,10,13,13,11,8,13,12,15,14,15,13])}
+ // Progres: matriks realisasi per item per minggu laporan
+ if(J.wk.length){y=wg['!ref']?X.utils.decode_range(wg['!ref']).e.r+3:3;put(wg,'A'+y,'REALISASI KUMULATIF PER ITEM (%) PER MINGGU LAPORAN');y++;
+  ['No','Uraian pekerjaan','Bobot',...J.wk.map(k=>'Minggu '+k),'Biaya keluar s/d M'+J.W].forEach((t,c)=>put(wg,EC(c)+y,t));
+  r.G.forEach((g,gi)=>{y++;put(wg,'A'+y,ROM[gi]);put(wg,'B'+y,g.n);J.rows.filter(x=>x.gi==gi).forEach((x,j)=>{y++;put(wg,'A'+y,j+1);put(wg,'B'+y,x.n);put(wg,'C'+y,x.w/100,'0.00%');J.wk.forEach((k,c)=>put(wg,EC(3+c)+y,J.pctAt(x.key,k)/100,'0%'));put(wg,EC(3+J.wk.length)+y,J.bAt(x.key,J.W),NF)})});
+  fin(wg,y,Math.max(7,4+J.wk.length),[10,44,16,18,10,20,50,...Array(Math.max(0,J.wk.length-3)).fill(12)])}
+ X.utils.book_append_sheet(wb,wsr,'Ringkasan');X.utils.book_append_sheet(wb,wr,'RAB');X.utils.book_append_sheet(wb,wk,'Kurva S');X.utils.book_append_sheet(wb,wp,'RAP');X.utils.book_append_sheet(wb,wg,'Progres');
+ X.utils.book_append_sheet(wb,wgb,'Daftar Gambar');X.utils.book_append_sheet(wb,wsp,'Spesifikasi');X.utils.book_append_sheet(wb,wm,'Material');X.utils.book_append_sheet(wb,wh,'Harga Dasar');X.utils.book_append_sheet(wb,wa,'Analisa');X.utils.book_append_sheet(wb,was,'Asumsi');if(wu)X.utils.book_append_sheet(wb,wu,'Urugan');
  X.writeFile(wb,'RAB '+(I.nama||'Rumah').replace(/[\\/:*?"<>|]/g,'')+'.xlsx');toast('File Excel diunduh');
 };
 
