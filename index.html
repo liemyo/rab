@@ -97,6 +97,11 @@ tr.tot td{font-weight:800;font-size:15px}
 .mute{color:var(--mute)}
 .pin{width:120px;text-align:right;border:1px solid var(--line);background:var(--in);border-radius:6px;padding:4px 6px}
 .pin.ov{border-color:var(--acc);background:var(--acc2)}
+a.mh{color:inherit;text-decoration:underline dotted;text-underline-offset:3px;cursor:pointer}a.mh:hover{color:var(--acc)}a.mh.ov{color:var(--acc);font-weight:600}
+tr.flash>td{animation:mhf 2.4s ease-out}@keyframes mhf{0%,40%{background:var(--acc2)}100%{background:transparent}}
+.mhq{width:260px;max-width:100%;border:1px solid var(--line);background:var(--in);border-radius:8px;padding:6px 10px}
+.mhtag{font-size:11px;color:var(--acc)}
+@media print{a.mh{text-decoration:none}}
 .tb{width:100%;border:1px solid var(--line);background:var(--in);border-radius:6px;padding:4px 6px}
 .note{font-size:12.5px;color:var(--mute);line-height:1.55}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -198,7 +203,7 @@ footer{max-width:none;margin:0;padding:4px 16px 24px;font-size:12px;color:var(--
     <div id="view"></div>
   </main>
 </div>
-<footer>Hasil adalah estimasi berdasarkan koefisien analisa harga satuan (acuan AHSP/SNI, disesuaikan praktik lapangan) dan harga rata-rata. Sesuaikan harga di tab <b>Harga Dasar</b> dengan harga toko dan upah di daerah Anda. Data tersimpan di browser ini saja.</footer>
+<footer>Hasil adalah estimasi berdasarkan koefisien analisa harga satuan (acuan AHSP/SNI, disesuaikan praktik lapangan) dan harga rata-rata. Sesuaikan harga di tab <b>Master Harga</b> dengan harga toko dan upah di daerah Anda. Data tersimpan di browser ini saja.</footer>
 
 <dialog id="dlg"></dialog>
 <div class="toast" id="toast"></div>
@@ -433,8 +438,8 @@ const FIELDS=[
 /* ---------- Penyimpanan ---------- */
 const LS={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 function nextMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+((8-d.getDay())%7||7));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function fresh(){return{I:{...DEF},ov:{},hp:{},extra:[],sch:{},urug:[],urugTruk:7,pg:{mulai:nextMonday(),lap:{}}}}
-function normS(){S.I={...DEF,...S.I};S.ov=S.ov||{};S.hp=S.hp||{};S.extra=S.extra||[];S.sch=S.sch||{};S.urug=S.urug||[];S.urugTruk=S.urugTruk||7;S.pg=S.pg||{};S.pg.lap=S.pg.lap||{};if(!/^\d{4}-\d\d-\d\d$/.test(S.pg.mulai||''))S.pg.mulai=nextMonday()}
+function fresh(){return{I:{...DEF},ov:{},hp:{},hs:{},extra:[],sch:{},urug:[],urugTruk:7,pg:{mulai:nextMonday(),lap:{}}}}
+function normS(){S.I={...DEF,...S.I};S.ov=S.ov||{};S.hp=S.hp||{};S.hs=S.hs||{};S.extra=S.extra||[];S.sch=S.sch||{};S.urug=S.urug||[];S.urugTruk=S.urugTruk||7;S.pg=S.pg||{};S.pg.lap=S.pg.lap||{};if(!/^\d{4}-\d\d-\d\d$/.test(S.pg.mulai||''))S.pg.mulai=nextMonday()}
 let S=LS.get('rab-current-v1');
 if(!S||!S.I)S=fresh();
 normS();
@@ -459,7 +464,10 @@ const hk=id=>Array.isArray(R[id].p)?id+'@'+S.I.kualitas:id;
 const basePrice=id=>{const p=R[id].p;return Math.round((Array.isArray(p)?p[QI[S.I.kualitas]]:p)*(num(S.I.idx)||1))};
 const price=id=>{const o=S.hp[hk(id)];return o!=null?o:basePrice(id)};
 let HC={};
-function hsp(k){if(HC[k]!=null)return HC[k];let t=0;for(const[r,c]of Object.entries(A[k].r))t+=c*(r[0]=='@'?hsp(r.slice(1)):price(r));return HC[k]=Math.round(t)}
+function hsA(k){let t=0;for(const[r,c]of Object.entries(A[k].r))t+=c*(r[0]=='@'?hsp(r.slice(1)):price(r));return Math.round(t)}
+function hsp(k){if(HC[k]!=null)return HC[k];const o=S.hs[k];return HC[k]=o!=null?o:hsA(k)}
+/* tautan harga satuan → item di Master Harga (a:kode analisa, r:kode harga dasar) */
+const mh=(t,id,v)=>`<a class="mh${(t=='a'?S.hs[id]:S.hp[hk(id)])!=null?' ov':''}" data-mh="${t}:${id}" title="Buka di Master Harga">${fmt(v)}</a>`;
 function need(k,q,acc){for(const[r,c]of Object.entries(A[k].r)){if(r[0]=='@')need(r.slice(1),q*c,acc);else acc[r]=(acc[r]||0)+q*c}return acc}
 
 /* ---------- Denah otomatis ----------
@@ -1453,7 +1461,7 @@ function jadwal(r){
   const sp={b:0,u:0,s:0};
   if(xe){if(xe.bh){sp.b=Math.min(x.j,Math.round(xe.bh*x.v));sp.u=x.j-sp.b}else sp.s=x.j}else{let t=0;for(const[id,q]of Object.entries(need(x.an,x.v,{}))){const c=q*price(id);sp[R[id].k]+=c;t+=c}
    if(t){sp.b=Math.round(sp.b*x.j/t);sp.u=Math.round(sp.u*x.j/t);sp.s=x.j-sp.b-sp.u}}
-  rows.push({key:x.key,n:x.n,u:x.u,v:x.v,gi,j:x.j,w:r.jml?x.j/r.jml*100:0,s,d,e:s+d-1,as,ad:ae-as+1,ov:!!o,sp});
+  rows.push({key:x.key,an:x.an,hs:x.hs,n:x.n,u:x.u,v:x.v,gi,j:x.j,w:r.jml?x.j/r.jml*100:0,s,d,e:s+d-1,as,ad:ae-as+1,ov:!!o,sp});
  }));
  const plan=Array(T).fill(0),rapK=Array.from({length:T},()=>({b:0,u:0,s:0}));
  rows.forEach(x=>{for(let k=x.s;k<=x.e;k++){plan[k-1]+=x.w/x.d;for(const c in x.sp)rapK[k-1][c]+=x.sp[c]/x.d}});
@@ -1580,7 +1588,7 @@ $('#form').addEventListener('click',e=>{
 
 /* ---------- Hasil ---------- */
 let RES;
-const TABS=[['ringkas','Ringkasan'],['rab','RAB Detail'],['jadwal','Jadwal & Kurva S'],['rap','RAP'],['progres','Update Progres'],['urugan','Hitung Urugan'],['gambar','Gambar Kerja'],['spek','Spesifikasi Teknis'],['material','Daftar Material & Upah'],['harga','Harga Dasar'],['analisa','Analisa Harga Satuan'],['asumsi','Asumsi & Cara Hitung']];
+const TABS=[['ringkas','Ringkasan'],['rab','RAB Detail'],['jadwal','Jadwal & Kurva S'],['rap','RAP'],['progres','Update Progres'],['urugan','Hitung Urugan'],['gambar','Gambar Kerja'],['spek','Spesifikasi Teknis'],['material','Daftar Material & Upah'],['harga','Master Harga'],['analisa','Analisa Harga Satuan'],['asumsi','Asumsi & Cara Hitung']];
 function update(){RES=hitung();save();renderCards();renderView()}
 function renderCards(){
  const r=RES,D=r.D;
@@ -1604,8 +1612,13 @@ function rekapRows(r,cls=''){
 }
 function matSplit(r){const o={b:0,u:0,s:0};for(const[id,q]of Object.entries(r.M))o[R[id].k]+=q*price(id);return o}
 
+let mhQ='';
+function mhFilter(){const q=mhQ.trim().toLowerCase();document.querySelectorAll('#view tr[data-q]').forEach(t=>t.style.display=!q||q.split(/\s+/).every(w=>t.dataset.q.includes(w))?'':'none')}
+function goMH(ref){const[t,id]=ref.split(/:(.*)/);tab='harga';LS.set('rab-tab',tab);mhQ='';renderCards();renderView();
+ const tr=document.getElementById('mh-'+t+'-'+id);if(!tr)return;tr.classList.remove('flash');void tr.offsetWidth;tr.classList.add('flash');
+ tr.scrollIntoView({block:'center',behavior:'smooth'});const i=tr.querySelector('input');if(i)setTimeout(()=>{i.focus({preventScroll:true});i.select()},350)}
 function renderView(){
- const a=document.activeElement,fk=a&&a.dataset&&a.dataset.fk;renderView0(tab,$('#view'));
+ const a=document.activeElement,fk=a&&a.dataset&&a.dataset.fk;renderView0(tab,$('#view'));if(tab=='harga')mhFilter();
  if(fk){const el=document.querySelector(`#view [data-fk="${CSS.escape(fk)}"]`);if(el){el.focus();el.select&&el.select()}}
 }
 function renderView0(tab,v){
@@ -1638,14 +1651,14 @@ function renderView0(tab,v){
      <td class="n"><input class="pin" data-x="${x.extra}" data-f="h" value="${e.h?fmt(num(e.h)):''}"></td><td class="n">${rp(x.j)}</td></tr>`;return}
     h+=`<tr><td>${j+1}</td><td><span class="nm" data-an="${x.key}">${esc(x.n)} ${open.has(x.key)?'▾':'▸'}</span><span class="fx">${esc(x.f)}</span></td>
     <td class="n"><input class="vin ${x.ov?'ov':''}" data-ov="${x.key}" value="${dec(x.v)}" title="Ubah volume bila perlu">${x.ov?`<button class="rs" data-rs="${x.key}" title="Kembali ke otomatis (${dec(x.auto)})">↺</button>`:''}</td>
-    <td>${x.u}</td><td class="n">${fmt(x.hs)}</td><td class="n">${fmt(x.j)}</td></tr>`;
+    <td>${x.u}</td><td class="n">${mh('a',x.an,x.hs)}</td><td class="n">${fmt(x.j)}</td></tr>`;
     if(open.has(x.key))h+=`<tr class="an"><td></td><td colspan="5">${anTable(x.an)}</td></tr>`;
    });
    h+=`<tr class="st"><td></td><td colspan="4">Subtotal ${ROM[i]}</td><td class="n">${fmt(g.sub)}</td></tr>`;
   });
   h+=`</table><div style="margin:10px 0"><button class="btn sm" id="bAdd">＋ Tambah pekerjaan lain (pagar, kanopi, dll.)</button></div>
   <table>${rekapRows(r)}</table><div class="ter">Terbilang: ${terbilang(r.bul)}</div>
-  <p class="note">Klik nama pekerjaan untuk melihat analisa harga satuannya. Kolom volume bisa diubah langsung (kotak oranye = diubah manual, ↺ untuk kembali ke hitungan otomatis).</p></div>`;
+  <p class="note">Klik nama pekerjaan untuk melihat analisa harga satuannya. Kolom volume bisa diubah langsung (kotak oranye = diubah manual, ↺ untuk kembali ke hitungan otomatis). Klik harga satuan untuk membuka & mengubahnya di <b>Master Harga</b>.</p></div>`;
   v.innerHTML=h;
  }
  else if(tab=='jadwal'){
@@ -1689,7 +1702,7 @@ function renderView0(tab,v){
    h+=`<tr class="g"><td>${ROM[gi]}</td><td colspan="8">${g.n}</td></tr>`;
    it.forEach((x,j)=>{const pl=planItem(x,w),ac=J.pctAt(x.key,w),b=J.bAt(x.key,w),ps=L.p&&L.p[x.key]!=null,bs=L.b&&L.b[x.key]!=null;
     const st=ac>=100?'<span class="up">✓ selesai</span>':ac>pl+.005?'<span class="up">▲ lebih cepat</span>':ac>=pl-.005?(pl>0?'<span class="up">sesuai</span>':'<span class="mute">belum mulai</span>'):`<span class="dn">▼ kurang ${fmt(pl-ac,0)}%</span>`;
-    h+=`<tr><td class="mute">${j+1}</td><td>${esc(x.n)}<span class="fx">${dec(x.v)} ${x.u} · RAP ${rp(x.j)}</span></td><td class="n">${pc(x.w)}</td><td class="mute" style="white-space:nowrap">M${x.s}${x.d>1?'–'+x.e:''}</td><td class="n">${fmt(pl,0)}</td>
+    h+=`<tr><td class="mute">${j+1}</td><td>${esc(x.n)}<span class="fx">${dec(x.v)} ${x.u} × ${x.an?mh('a',x.an,x.hs):fmt(x.hs)} · RAP ${rp(x.j)}</span></td><td class="n">${pc(x.w)}</td><td class="mute" style="white-space:nowrap">M${x.s}${x.d>1?'–'+x.e:''}</td><td class="n">${fmt(pl,0)}</td>
     <td class="n"><input class="pp ${ps?'set':''}" inputmode="decimal" data-pp="${x.key}" data-fk="pp:${x.key}" value="${dec(ac)}"></td><td class="n">${pc(x.w*ac/100)}</td>
     <td class="n"><input class="pin ${bs?'set':''}" inputmode="numeric" data-pb="${x.key}" data-fk="pb:${x.key}" value="${b?fmt(b):''}" placeholder="0"></td><td style="white-space:nowrap">${st}</td></tr>`});
   });
@@ -1705,20 +1718,20 @@ function renderView0(tab,v){
    ${kv('Cadangan risiko (tak terduga)',rp(r.tt))}
    <tr class="st"><td>Total RAP (anggaran pelaksanaan)</td><td class="n">${rp(rap)}</td></tr>
    ${kv('Rencana laba kotor (jasa)',rp(dpp-rap)+' · '+dec(dpp?((dpp-rap)/dpp*100).toFixed(1):0)+'%','up')}
-  </table><p class="note">RAP = biaya yang benar-benar dikeluarkan pelaksana: volume RAB × koefisien analisa × harga dasar, dipecah bahan / upah / borongan. Masukkan harga beli riil di tab <b>Harga Dasar</b>.</p></div>
+  </table><p class="note">RAP = biaya yang benar-benar dikeluarkan pelaksana: volume RAB × koefisien analisa × harga dasar, dipecah bahan / upah / borongan. Masukkan harga beli riil di tab <b>Master Harga</b> (klik harga satuan di tabel bawah).</p></div>
   <div class="panel"><h3>Pengendalian biaya${w?` s/d minggu ke-${w}`:''}</h3>${w?`<table class="kv">
    ${kv('Progres fisik',pc(K.ac)+'%')}${kv('Nilai pekerjaan selesai (RAP × progres)',rp(K.ev))}${kv('Biaya keluar (realisasi)',rp(K.ac$))}
    ${kv('Selisih (nilai selesai − biaya keluar, item yang biayanya diisi)',K.ac$?sr(K.evB-K.ac$):'–',K.evB>=K.ac$?'up':'dn')}
    ${kv('CPI (efisiensi biaya)',K.ac$?fmt(K.cpi,2):'–',K.cpi>=1?'up':'dn')}
    ${kv('Perkiraan biaya langsung akhir (RAP ÷ CPI)',K.cpi?rp(r.jml/K.cpi):'–')}
    ${kv('Sisa anggaran RAP',rp(rap-K.ac$))}</table>${K.ac$?'':'<p class="note">Isi kolom biaya keluar di tab Update Progres untuk melihat efisiensi biaya.</p>'}`:'<p class="note">Belum ada laporan progres. Isi realisasi dan biaya keluar di tab <b>Update Progres</b>; bagian ini lalu membandingkan biaya keluar dengan nilai pekerjaan yang sudah selesai.</p>'}</div></div>
-  <div class="panel" style="margin-top:12px"><h3>Rincian RAP per item</h3><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Volume</th><th>Sat</th><th class="n">Bahan</th><th class="n">Upah</th><th class="n">Borongan</th><th class="n">RAP</th><th class="n">Progres</th><th class="n">Biaya keluar</th><th class="n">Sisa anggaran</th><th class="n">Selisih</th></tr>`;
+  <div class="panel" style="margin-top:12px"><h3>Rincian RAP per item</h3><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Volume</th><th>Sat</th><th class="n">Harga sat</th><th class="n">Bahan</th><th class="n">Upah</th><th class="n">Borongan</th><th class="n">RAP</th><th class="n">Progres</th><th class="n">Biaya keluar</th><th class="n">Sisa anggaran</th><th class="n">Selisih</th></tr>`;
   r.G.forEach((g,gi)=>{const it=J.rows.filter(x=>x.gi==gi),t={b:0,u:0,s:0,j:0,ac:0};
-   h+=`<tr class="g"><td>${ROM[gi]}</td><td colspan="11">${g.n}</td></tr>`;
+   h+=`<tr class="g"><td>${ROM[gi]}</td><td colspan="12">${g.n}</td></tr>`;
    it.forEach((x,j)=>{const p=w?J.pctAt(x.key,w):0,b=w?J.bAt(x.key,w):0,ev=x.j*p/100;t.b+=x.sp.b;t.u+=x.sp.u;t.s+=x.sp.s;t.j+=x.j;t.ac+=b;
-    h+=`<tr><td class="mute">${j+1}</td><td>${esc(x.n)}</td><td class="n">${dec(x.v)}</td><td>${x.u}</td><td class="n">${fmt(x.sp.b)}</td><td class="n">${fmt(x.sp.u)}</td><td class="n">${fmt(x.sp.s)}</td><td class="n"><b>${fmt(x.j)}</b></td><td class="n">${p?fmt(p,0)+'%':''}</td><td class="n">${b?fmt(b):''}</td><td class="n ${x.j-b<0?'dn':''}">${fmt(x.j-b)}</td><td class="n ${ev-b<0?'dn':'up'}">${b?(ev-b<0?'−':'+')+fmt(Math.abs(ev-b)):''}</td></tr>`});
-   h+=`<tr class="st"><td></td><td colspan="3">Subtotal ${ROM[gi]}</td><td class="n">${fmt(t.b)}</td><td class="n">${fmt(t.u)}</td><td class="n">${fmt(t.s)}</td><td class="n">${fmt(t.j)}</td><td></td><td class="n">${t.ac?fmt(t.ac):''}</td><td class="n">${fmt(t.j-t.ac)}</td><td></td></tr>`});
-  h+=`<tr class="tot"><td></td><td colspan="3">JUMLAH BIAYA LANGSUNG</td><td class="n">${fmt(sb.b)}</td><td class="n">${fmt(sb.u)}</td><td class="n">${fmt(sb.s)}</td><td class="n">${fmt(r.jml)}</td><td></td><td class="n">${K.ac$?fmt(K.ac$):''}</td><td class="n">${fmt(r.jml-K.ac$)}</td><td></td></tr></table>
+    h+=`<tr><td class="mute">${j+1}</td><td>${esc(x.n)}</td><td class="n">${dec(x.v)}</td><td>${x.u}</td><td class="n">${x.an?mh('a',x.an,x.hs):fmt(x.hs)}</td><td class="n">${fmt(x.sp.b)}</td><td class="n">${fmt(x.sp.u)}</td><td class="n">${fmt(x.sp.s)}</td><td class="n"><b>${fmt(x.j)}</b></td><td class="n">${p?fmt(p,0)+'%':''}</td><td class="n">${b?fmt(b):''}</td><td class="n ${x.j-b<0?'dn':''}">${fmt(x.j-b)}</td><td class="n ${ev-b<0?'dn':'up'}">${b?(ev-b<0?'−':'+')+fmt(Math.abs(ev-b)):''}</td></tr>`});
+   h+=`<tr class="st"><td></td><td colspan="4">Subtotal ${ROM[gi]}</td><td class="n">${fmt(t.b)}</td><td class="n">${fmt(t.u)}</td><td class="n">${fmt(t.s)}</td><td class="n">${fmt(t.j)}</td><td></td><td class="n">${t.ac?fmt(t.ac):''}</td><td class="n">${fmt(t.j-t.ac)}</td><td></td></tr>`});
+  h+=`<tr class="tot"><td></td><td colspan="4">JUMLAH BIAYA LANGSUNG</td><td class="n">${fmt(sb.b)}</td><td class="n">${fmt(sb.u)}</td><td class="n">${fmt(sb.s)}</td><td class="n">${fmt(r.jml)}</td><td></td><td class="n">${K.ac$?fmt(K.ac$):''}</td><td class="n">${fmt(r.jml-K.ac$)}</td><td></td></tr></table>
   <p class="note">Selisih = nilai pekerjaan selesai (RAP × progres) − biaya keluar. Merah = biaya melebihi progres (boros / harga naik), hijau = hemat.</p></div>`;
   const cf=[];let ck=0;
   for(let m=0;m*4<J.T;m++){const o={b:0,u:0,s:0},we=Math.min(J.T,m*4+4);for(let k=m*4;k<we;k++)for(const c in o)o[c]+=J.rapK[k][c];const t=o.b+o.u+o.s;ck+=t;cf.push({m,o,t,ck,we,act:we<=J.W?J.rows.reduce((s,x)=>s+J.bAt(x.key,we),0):null})}
@@ -1777,21 +1790,30 @@ function renderView0(tab,v){
  else if(tab=='material'){
   const rows=k=>Object.entries(r.M).filter(([id])=>R[id].k==k).sort((a,b)=>b[1]*price(b[0])-a[1]*price(a[0]));
   const tb=(k,title,cols)=>{let s=0;const rr=rows(k).map(([id,q])=>{const t=q*price(id);s+=t;const pk=R[id].pk;
-   return`<tr><td>${R[id].n}</td><td class="n">${dec(q<10?q.toFixed(2):Math.round(q))}</td><td>${R[id].u}</td>${cols?`<td class="n mute">${pk?'± '+fmt(Math.ceil(q/pk[0]))+' '+pk[1]:''}</td>`:''}<td class="n">${fmt(price(id))}</td><td class="n">${fmt(t)}</td></tr>`}).join('');
+   return`<tr><td>${R[id].n}</td><td class="n">${dec(q<10?q.toFixed(2):Math.round(q))}</td><td>${R[id].u}</td>${cols?`<td class="n mute">${pk?'± '+fmt(Math.ceil(q/pk[0]))+' '+pk[1]:''}</td>`:''}<td class="n">${mh('r',id,price(id))}</td><td class="n">${fmt(t)}</td></tr>`}).join('');
    return`<div class="panel"><h3>${title}</h3><table><tr><th>Uraian</th><th class="n">Kebutuhan</th><th>Sat</th>${cols?'<th class="n">Kemasan</th>':''}<th class="n">Harga</th><th class="n">Total</th></tr>${rr}<tr class="st"><td colspan="${cols?5:4}">Jumlah</td><td class="n">${rp(s)}</td></tr></table></div>`};
   v.innerHTML=tb('b','Daftar belanja material',1)+tb('u','Kebutuhan tenaga kerja (orang-hari)',0)+tb('s','Borongan / barang terpasang',0)+
   `<p class="note" style="margin-top:10px">Kebutuhan material sudah memasukkan faktor susut dari koefisien analisa. Kebutuhan tenaga ${fmt(Object.entries(r.M).filter(([id])=>R[id].k=='u').reduce((s,[,q])=>s+q,0))} OH ≈ ${fmt(Math.ceil(Object.entries(r.M).filter(([id])=>R[id].k=='u').reduce((s,[,q])=>s+q,0)/(D.bln*25)))} orang/hari bila dikerjakan ${D.bln} bulan.</p>`;
  }
  else if(tab=='harga'){
-  const used=new Set(Object.keys(r.M));
-  const sec=(k,t)=>`<div class="panel"><h3>${t}</h3><table><tr><th>Uraian</th><th>Sat</th><th class="n">Harga</th><th></th></tr>${Object.entries(R).filter(([,x])=>x.k==k).map(([id,x])=>{const o=S.hp[hk(id)]!=null;
-   return`<tr class="${used.has(id)?'':'mute'}"><td>${x.n}${Array.isArray(x.p)?` <span class="mute">(${QN[S.I.kualitas].toLowerCase()})</span>`:''}</td><td>${x.u}</td><td class="n"><input class="pin ${o?'ov':''}" data-hp="${id}" value="${fmt(price(id))}"></td><td>${o?`<button class="rs" data-hpr="${id}" title="Kembali ke ${fmt(basePrice(id))}">↺</button>`:''}</td></tr>`}).join('')}</table></div>`;
-  v.innerHTML=`<div class="panel note">Harga default = harga rata-rata × indeks wilayah (${dec(num(S.I.idx)||1)}). Ganti dengan harga toko/upah di tempat Anda; harga yang diubah ditandai oranye dan tidak ikut indeks. Barang bertanda kualitas punya harga terpisah untuk Sederhana/Menengah/Mewah. Baris abu-abu tidak dipakai di proyek ini. <button class="btn sm" id="bHpReset" style="margin-left:6px">↺ Semua harga ke default</button></div>`+sec('u','Upah tenaga kerja (per hari)')+sec('b','Bahan / material')+sec('s','Borongan / barang terpasang');
+  const used=new Set(Object.keys(r.M)),au=new Set();const add=k=>{if(au.has(k))return;au.add(k);for(const q of Object.keys(A[k].r))if(q[0]=='@')add(q.slice(1))};
+  r.G.forEach(g=>g.it.forEach(x=>x.an&&add(x.an)));
+  const nA=Object.keys(S.hs).length,nR=Object.keys(S.hp).length;
+  const ak=Object.keys(A).sort((x,y)=>au.has(y)-au.has(x));
+  const secA=`<div class="panel"><h3>A. Harga satuan pekerjaan (hasil Analisa Harga Satuan)</h3><table><tr><th>Uraian pekerjaan</th><th>Sat</th><th class="n">Hasil analisa</th><th class="n">Harga dipakai</th><th></th></tr>${ak.map(k=>{const o=S.hs[k]!=null,a0=hsA(k);
+   return`<tr id="mh-a-${k}" class="${au.has(k)?'':'mute unused'}" data-q="${esc((A[k].n+' '+k).toLowerCase())}"><td><span class="nm" data-an="mh:${k}">${esc(A[k].n)} ${open.has('mh:'+k)?'▾':'▸'}</span>${au.has(k)?'':' <span class="mute">(tidak dipakai)</span>'}</td><td>${A[k].u}</td><td class="n mute">${fmt(a0)}</td><td class="n"><input class="pin ${o?'ov':''}" data-hs="${k}" data-fk="hs:${k}" value="${fmt(hsp(k))}"></td><td>${o?`<button class="rs" data-hsr="${k}" title="Kembali ke hasil analisa ${fmt(a0)}">↺</button>`:''}</td></tr>`+(open.has('mh:'+k)?`<tr class="an" data-q="${esc((A[k].n+' '+k).toLowerCase())}"><td colspan="5">${anTable(k)}</td></tr>`:'')}).join('')}</table></div>`;
+  const sec=(k,t)=>`<div class="panel"><h3>${t}</h3><table><tr><th>Uraian</th><th>Sat</th><th class="n">Default</th><th class="n">Harga dipakai</th><th></th></tr>${Object.entries(R).filter(([,x])=>x.k==k).map(([id,x])=>{const o=S.hp[hk(id)]!=null;
+   return`<tr id="mh-r-${id}" class="${used.has(id)?'':'mute unused'}" data-q="${esc((x.n+' '+id).toLowerCase())}"><td>${x.n}${Array.isArray(x.p)?` <span class="mute">(${QN[S.I.kualitas].toLowerCase()})</span>`:''}</td><td>${x.u}</td><td class="n mute">${fmt(basePrice(id))}</td><td class="n"><input class="pin ${o?'ov':''}" data-hp="${id}" data-fk="hp:${id}" value="${fmt(price(id))}"></td><td>${o?`<button class="rs" data-hpr="${id}" title="Kembali ke ${fmt(basePrice(id))}">↺</button>`:''}</td></tr>`}).join('')}</table></div>`;
+  v.innerHTML=`<div class="panel"><div class="ctl"><input class="mhq" type="search" id="mhq" placeholder="Cari pekerjaan / bahan / upah…" value="${esc(mhQ)}">
+   <span class="mute">${nA+nR?`<span class="mhtag">${nA} harga satuan & ${nR} harga dasar diubah manual</span>`:'Semua harga otomatis'}</span>
+   <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${nA?'<button class="btn sm" id="bHsReset">↺ Harga satuan ke hasil analisa</button>':''}<button class="btn sm" id="bHpReset">↺ Reset semua harga</button></span></div>
+   <p class="note" style="margin:8px 0 0">Master Harga memuat <b>semua harga satuan</b> yang dipakai RAB, RAP, progres, jadwal, PDF & Excel. <b>A</b> = harga satuan pekerjaan otomatis dari analisa (koefisien × harga dasar B). Kontraktor boleh mengganti harga tertentu langsung (kotak oranye = diubah manual, nilainya tetap walau harga dasar/kualitas berubah); <b>↺</b> mengembalikan ke otomatis. <b>B</b> = harga dasar default (harga rata-rata × indeks wilayah ${dec(num(S.I.idx)||1)}); mengubahnya ikut mengubah semua harga satuan A yang memakainya. Klik harga satuan di tab mana pun untuk lompat ke sini. Baris abu-abu tidak dipakai di proyek ini.</p></div>`
+   +secA+sec('u','B1. Upah tenaga kerja (per hari)')+sec('b','B2. Bahan / material')+sec('s','B3. Borongan / barang terpasang');
  }
  else if(tab=='analisa'){
   const used=[];const add=k=>{if(used.includes(k))return;for(const r2 of Object.keys(A[k].r))if(r2[0]=='@')add(r2.slice(1));used.push(k)};
   r.G.forEach(g=>g.it.forEach(x=>x.an&&add(x.an)));
-  v.innerHTML=`<div class="panel note">Analisa harga satuan pekerjaan (AHSP): koefisien × harga dasar. Pekerjaan beton bertulang memakai gabungan analisa beton + pembesian + bekisting.</div>`+used.map(k=>`<div class="panel"><h3>${A[k].n} <span class="mute">/ ${A[k].u}</span> — ${rp(hsp(k))}</h3>${anTable(k)}</div>`).join('');
+  v.innerHTML=`<div class="panel note">Analisa harga satuan pekerjaan (AHSP): koefisien × harga dasar. Pekerjaan beton bertulang memakai gabungan analisa beton + pembesian + bekisting. Klik angka harga untuk mengubahnya di <b>Master Harga</b>.</div>`+used.map(k=>`<div class="panel"><h3>${A[k].n} <span class="mute">/ ${A[k].u}</span> — Rp ${mh('a',k,hsp(k))}</h3>${anTable(k)}</div>`).join('');
  }
  else if(tab=='asumsi'&&D.gd)v.innerHTML=asumsiGudang(r);
  else if(tab=='asumsi'){
@@ -1818,16 +1840,20 @@ function renderView0(tab,v){
 }
 function anTable(k){
  let t=0;const rows=Object.entries(A[k].r).map(([r,c])=>{const sub=r[0]=='@',id=sub?r.slice(1):r,p=sub?hsp(id):price(id),j=c*p;t+=j;
-  return`<tr><td>${sub?'↳ '+A[id].n:R[id].n}</td><td class="n">${dec(+c.toFixed(4))}</td><td>${sub?A[id].u:R[id].u}</td><td class="n">${fmt(p)}</td><td class="n">${fmt(j)}</td></tr>`}).join('');
- return`<table><tr><th>Komponen</th><th class="n">Koefisien</th><th>Sat</th><th class="n">Harga</th><th class="n">Jumlah</th></tr>${rows}<tr class="st"><td colspan="4">Harga satuan per ${A[k].u}</td><td class="n">${fmt(Math.round(t))}</td></tr></table>`;
+  return`<tr><td>${sub?'↳ '+A[id].n:R[id].n}</td><td class="n">${dec(+c.toFixed(4))}</td><td>${sub?A[id].u:R[id].u}</td><td class="n">${mh(sub?'a':'r',id,p)}</td><td class="n">${fmt(j)}</td></tr>`}).join('');
+ const o=S.hs[k];
+ return`<table><tr><th>Komponen</th><th class="n">Koefisien</th><th>Sat</th><th class="n">Harga</th><th class="n">Jumlah</th></tr>${rows}<tr class="st"><td colspan="4">Harga satuan per ${A[k].u}${o!=null?' (hasil analisa)':''}</td><td class="n">${fmt(Math.round(t))}</td></tr>${o!=null?`<tr class="st"><td colspan="4">Harga satuan dipakai (diubah di Master Harga)</td><td class="n">${mh('a',k,o)}</td></tr>`:''}</table>`;
 }
 
 $('#view').addEventListener('click',e=>{
  const t=e.target;
+ const lk=t.closest('[data-mh]');if(lk){e.preventDefault();goMH(lk.dataset.mh);return}
+ if(t.dataset.hsr){delete S.hs[t.dataset.hsr];update();return}
+ if(t.id=='bHsReset'&&confirm('Kembalikan semua harga satuan pekerjaan ke hasil analisa?')){S.hs={};update();return}
  if(t.dataset.an){const k=t.dataset.an;open.has(k)?open.delete(k):open.add(k);renderView();return}
  if(t.dataset.rs){delete S.ov[t.dataset.rs];update();return}
  if(t.dataset.hpr){delete S.hp[hk(t.dataset.hpr)];update();return}
- if(t.id=='bHpReset'&&confirm('Kembalikan semua harga ke default?')){S.hp={};update();return}
+ if(t.id=='bHpReset'&&confirm('Kembalikan SEMUA harga (harga satuan pekerjaan & harga dasar) ke otomatis/default?')){S.hp={};S.hs={};update();return}
  if(t.id=='bAdd'){S.extra.push({n:'',v:1,u:'ls',h:0});update();setTimeout(()=>{const l=[...document.querySelectorAll('input[data-f="n"]')].pop();l&&l.focus()},0);return}
  if(t.dataset.xdel!=null){S.extra.splice(+t.dataset.xdel,1);update();return}
  const gz=t.closest('[data-gz]');if(gz&&!t.closest('dialog')){const g=window.__SH[+gz.dataset.gz],d=$('#dlg');d.classList.add('big');d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b>${g.code} · ${esc(g.title)}</b><button class="btn sm" id="pClose" style="margin-left:auto">Tutup</button></div><div class="paper">${g.svg}</div>`;d.showModal();return}
@@ -1872,8 +1898,10 @@ $('#view').addEventListener('change',e=>{
   return setTimeout(update)}
  if(t.dataset.ov){const k=t.dataset.ov,val=numIn(t.value);let auto;RES.G.forEach(g=>g.it.forEach(x=>{if(x.key==k)auto=x.auto}));if(Math.abs(val-auto)<.005)delete S.ov[k];else S.ov[k]=val;update()}
  else if(t.dataset.hp){const id=t.dataset.hp,val=Math.round(num(t.value));if(val==basePrice(id))delete S.hp[hk(id)];else S.hp[hk(id)]=val;update()}
+ else if(t.dataset.hs){const k=t.dataset.hs,val=Math.round(num(t.value));if(val==hsA(k))delete S.hs[k];else S.hs[k]=val;update()}
  else if(t.dataset.x!=null){const e2=S.extra[+t.dataset.x],f=t.dataset.f;e2[f]=f=='n'||f=='u'?t.value:f=='h'?num(t.value):numIn(t.value);update()}
 });
+$('#view').addEventListener('input',e=>{if(e.target.id=='mhq'){mhQ=e.target.value;mhFilter()}});
 $('#view').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.tagName=='INPUT')e.target.blur()});
 
 /* ---------- Proyek tersimpan ---------- */
@@ -1899,7 +1927,7 @@ $('#dlg').addEventListener('click',e=>{
 /* ---------- Cetak / PDF lengkap: semua tab dirender ulang ke elemen sementara, input diganti teks ---------- */
 function cleanPrint(el){
  el.querySelectorAll('input,select').forEach(x=>{const sp=document.createElement('span');sp.textContent=x.tagName=='SELECT'?(x.options[x.selectedIndex]||{}).text||'':x.value;x.replaceWith(sp)});
- el.querySelectorAll('button,.paper,.sheets,.ctl').forEach(x=>x.remove());
+ el.querySelectorAll('button,.paper,.sheets,.ctl,tr.unused').forEach(x=>x.remove());
  return el.innerHTML;
 }
 function partHTML(tb){const d=document.createElement('div');renderView0(tb,d);return cleanPrint(d)}
@@ -1925,7 +1953,7 @@ $('#bPdf').onclick=()=>{
  h+=H('GAMBAR KERJA')+`<table><tr><th>No. lembar</th><th>Judul</th><th>Skala</th></tr>${SH.map(g=>`<tr><td>${g.code}</td><td>${esc(g.title)}</td><td>${g.sc}</td></tr>`).join('')}</table>`+sht(SH);
  h+=H('SPESIFIKASI TEKNIS')+spek(r).map((x,i)=>`<p style="margin:8px 0 2px"><b>${i+1}. ${x[0]}</b></p><ol class="spk" style="margin:0;padding-left:18px">${x[1].map(l=>`<li>${esc(l)}</li>`).join('')}</ol>`).join('');
  h+=H('DAFTAR MATERIAL & UPAH')+partHTML('material');
- h+=H('HARGA DASAR BAHAN, UPAH & BORONGAN')+partHTML('harga');
+ h+=H('MASTER HARGA (HARGA SATUAN PEKERJAAN & HARGA DASAR)')+partHTML('harga');
  h+=H('ANALISA HARGA SATUAN PEKERJAAN (AHSP)')+partHTML('analisa');
  h+=H('ASUMSI & CARA HITUNG')+partHTML('asumsi');
  if(S.urug.length)h+=H('PERHITUNGAN URUGAN')+partHTML('urugan');
@@ -1953,7 +1981,8 @@ $('#bXls').onclick=async()=>{
  r.G.forEach(g=>g.it.forEach(x=>x.an&&add(x.an)));
  order.forEach(k=>{y+=2;put(wa,'A'+y,A[k].n+' (per '+A[k].u+')');y++;['Komponen','Koefisien','Satuan','Harga (Rp)','Jumlah (Rp)'].forEach((t,c)=>put(wa,X.utils.encode_cell({r:y-1,c}),t));const a=y+1;
   for(const[q,c]of Object.entries(A[k].r)){y++;const sub=q[0]=='@',id=sub?q.slice(1):q;put(wa,'A'+y,sub?'↳ '+A[id].n:R[id].n);put(wa,'B'+y,c,'0.0000');put(wa,'C'+y,sub?A[id].u:R[id].u);put(wa,'D'+y,{f:sub?`E${AR[id]}`:`'Harga Dasar'!D${HR[id]}`},NF);put(wa,'E'+y,{f:`B${y}*D${y}`},NF)}
-  y++;put(wa,'A'+y,'Harga satuan per '+A[k].u);put(wa,'E'+y,{f:`ROUND(SUM(E${a}:E${y-1}),0)`},NF);AR[k]=y});
+  y++;put(wa,'A'+y,'Harga satuan per '+A[k].u);put(wa,'E'+y,{f:`ROUND(SUM(E${a}:E${y-1}),0)`},NF);AR[k]=y;
+  if(S.hs[k]!=null){y++;put(wa,'A'+y,'Harga satuan DIPAKAI (diubah manual di Master Harga)');put(wa,'E'+y,S.hs[k],NF);AR[k]=y}});
  fin(wa,y,5,[52,11,8,14,15]);
  // RAB
  const wr={};y=1;put(wr,'A1','RENCANA ANGGARAN BIAYA (RAB)');
