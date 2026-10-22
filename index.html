@@ -98,6 +98,20 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 .paper svg{display:block;width:100%;height:auto}
 dialog.big{width:min(1400px,calc(100vw - 16px));max-height:calc(100vh - 16px);padding:10px}
 dialog.big .paper{cursor:default;overflow:auto}
+.gt{width:auto;min-width:100%}.gt th,.gt td{padding:5px 6px}
+.gt th.c,.gt td.c{padding:0;width:20px;min-width:20px;text-align:center;border-left:1px solid var(--line);font-size:10.5px}
+.gt td.c.b{background:var(--bar)}.gt td.c.b.d{background:var(--acc)}.gt td.c.now{box-shadow:inset 2px 0 0 #2563eb}
+.gt tr.ft td{font-size:11px;font-weight:600;background:var(--hl)}.gt tr.ft td.c{font-size:9.5px;font-weight:500;padding:3px 1px}
+.gt .sv{width:42px;text-align:center;padding:3px 2px}
+.ctl{display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap}.ctl label{display:flex;gap:6px;align-items:center;font-size:13px}
+.ctl input,.ctl select{border:1px solid var(--line);background:var(--in);border-radius:7px;padding:5px 8px;max-width:100%}
+.kp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+.kp>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px}.kp b{display:block;font-size:19px;font-variant-numeric:tabular-nums}.kp small{color:var(--mute);font-size:12px}
+.up{color:var(--ok)}.dn{color:#dc2626}
+.pp{width:64px;text-align:right;border:1px solid var(--line);background:var(--in);border-radius:6px;padding:4px 6px}.pp.set,.pin.set{border-color:#2563eb;background:rgba(37,99,235,.08)}
+.bar2{height:6px;background:var(--hl);border-radius:4px;margin-top:6px;position:relative}.bar2 i{position:absolute;left:0;top:0;bottom:0;background:#2563eb;border-radius:4px}.bar2 em{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--acc)}
+@media (max-width:700px){.kp{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media print{#print .kp{display:flex;gap:6px}#print .kp>div{flex:1;border:1px solid #999;padding:4px}#print .grid2{display:block}#print .panel{border:0;padding:0;margin:8px 0}#print .note{color:#333}}
 .spek h3{margin:0 0 6px}.spek ol{margin:0;padding-left:20px}.spek li{margin:3px 0}
 @media (max-width:1300px){.sheets{grid-template-columns:minmax(0,1fr)}}
 footer{max-width:1400px;margin:0 auto;padding:4px 16px 24px;font-size:12px;color:var(--mute)}
@@ -357,10 +371,12 @@ const FIELDS=[
 
 /* ---------- Penyimpanan ---------- */
 const LS={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-function fresh(){return{I:{...DEF},ov:{},hp:{},extra:[]}}
+function nextMonday(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()+((8-d.getDay())%7||7));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fresh(){return{I:{...DEF},ov:{},hp:{},extra:[],sch:{},pg:{mulai:nextMonday(),lap:{}}}}
+function normS(){S.I={...DEF,...S.I};S.ov=S.ov||{};S.hp=S.hp||{};S.extra=S.extra||[];S.sch=S.sch||{};S.pg=S.pg||{};S.pg.lap=S.pg.lap||{};if(!/^\d{4}-\d\d-\d\d$/.test(S.pg.mulai||''))S.pg.mulai=nextMonday()}
 let S=LS.get('rab-current-v1');
 if(!S||!S.I)S=fresh();
-S.I={...DEF,...S.I};S.ov=S.ov||{};S.hp=S.hp||{};S.extra=S.extra||[];
+normS();
 let tab=LS.get('rab-tab')||'ringkas', open=new Set();
 let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>LS.set('rab-current-v1',S),250)}
 
@@ -717,15 +733,15 @@ function detailSVG(D){
  return{svg:s};
 }
 function wrapTxt(t,n){const w=String(t).split(' '),o=[];let l='';w.forEach(x=>{if((l+' '+x).trim().length>n){if(l)o.push(l);l=x}else l=(l+' '+x).trim()});if(l)o.push(l);return o}
-function sheet(code,title,scale,body,notes){
+function sheet(code,title,scale,body,notes,hdr='GAMBAR KERJA',sat='meter (kecuali tertulis)'){
  const I=S.I,d=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}),x=228;
  const T=(y,t,sz,o={})=>tx(o.x??x,y,t,sz,{a:'start',...o});
- let tb=T(15.5,'GAMBAR KERJA',3.4,{b:1})+T(19.5,'Rumah tinggal · RAB Rumah Otomatis',1.8,{c:GR})+ln(225,22,289,22,.3);
+ let tb=T(15.5,hdr,3.4,{b:1})+T(19.5,'Rumah tinggal · RAB Rumah Otomatis',1.8,{c:GR})+ln(225,22,289,22,.3);
  let y=26;[['PROYEK',I.nama||'-'],['PEMILIK',I.pemilik||'-'],['LOKASI',I.lokasi||'-']].forEach(([k,v])=>{tb+=T(y,k,1.6,{c:GR});wrapTxt(v,34).slice(0,2).forEach(l=>{y+=3.4;tb+=T(y,l,2.3,{b:1})});y+=4.2});
  tb+=ln(225,y-1.5,289,y-1.5,.3);y+=2.5;tb+=T(y,'CATATAN',1.6,{c:GR});y+=1;
  const yMax=164;(notes||[]).forEach(nt=>{const L=wrapTxt(nt,46);L.forEach((l,i)=>{if(y+3>yMax)return;y+=2.75;tb+=T(y,(i?'  ':'• ')+l,1.75)})});
  tb+=ln(225,166,289,166,.3)+T(170,'JUDUL GAMBAR',1.6,{c:GR});wrapTxt(title,26).slice(0,2).forEach((l,i)=>tb+=T(174.5+i*4,l,3,{b:1}));
- tb+=ln(225,183,289,183,.3)+ln(257,183,257,202,.3)+T(187,'SKALA',1.6,{c:GR})+T(192,scale,2.6,{b:1})+T(187,'NO. LEMBAR',1.6,{c:GR,x:259})+T(192,code,2.6,{b:1,x:259})+T(196.5,'TANGGAL',1.4,{c:GR})+T(200,d,1.8)+T(196.5,'SATUAN',1.4,{c:GR,x:259})+T(200,'meter (kecuali tertulis)',1.6,{x:259});
+ tb+=ln(225,183,289,183,.3)+ln(257,183,257,202,.3)+T(187,'SKALA',1.6,{c:GR})+T(192,scale,2.6,{b:1})+T(187,'NO. LEMBAR',1.6,{c:GR,x:259})+T(192,code,2.6,{b:1,x:259})+T(196.5,'TANGGAL',1.4,{c:GR})+T(200,d,1.8)+T(196.5,'SATUAN',1.4,{c:GR,x:259})+T(200,sat,1.6,{x:259});
  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 210" font-family="Inter,Arial,Helvetica,sans-serif"><style>text{fill:${INK}}</style><rect width="297" height="210" fill="#fff"/>${body}<rect x="8" y="8" width="281" height="194" fill="none" stroke="${INK}" stroke-width=".6"/><rect x="225" y="8" width="64" height="194" fill="#fff" stroke="${INK}" stroke-width=".4"/>${tb}</svg>`;
 }
 function sheetsList(R){
@@ -897,6 +913,85 @@ function hitung(){
  return{G,D,jml,jasa,tt,ppn,tot,bul,M,ex}
 }
 
+/* ---------- Jadwal, Kurva S, RAP & progres ----------
+   Jadwal otomatis: tiap item RAB mendapat jendela waktu [mulai, selesai] sebagai pecahan durasi total, mengikuti urutan kerja lapangan.
+   Bobot item = jumlah biaya item ÷ jumlah biaya pekerjaan. Rencana mingguan = bobot dibagi rata selama durasi item.
+   RAP = biaya langsung per item dipecah bahan/upah/borongan dari analisa. Progres realisasi disimpan per minggu (% kumulatif + biaya kumulatif). */
+const TLF=lt=>({bersih:[0,.03],bouwplank:[0,.04],gudang:[0,.04],airListrik:[0,1],
+ galian:[.03,.09],galianF:[.03,.08],pasirPond:[.05,.1],aanstamping:[.05,.11],batuKali:[.06,.15],footplat:[.06,.12],urugKembali:[.13,.18],sloof:[.12,.19],
+ sumur:[.04,.12],pompa:[.1,.14],septic:[.1,.2],pipaKotor:[.15,.22],urugTanah:[.17,.23],pasirLantai:[.2,.25],rabat:[.23,.29],
+ kolomPraktis:[.18,.44],kolom20:[.18,.42],dinding:[.19,.45],bouvenlight:[.3,.42],balok:[.3,.4],plat:[.32,.42],tangga:[.38,.46],ring:lt==2?[.42,.5]:[.36,.44],
+ pipaBersih:[.3,.45],titikLampu:[.4,.58],titikStop:[.4,.58],plester:[.34,.6],
+ rangka:[.46,.58],penutup:[.53,.63],bubungan:[.58,.65],lisplang:[.58,.66],
+ acian:[.5,.7],waterproof:[.56,.62],floorDrain:[.6,.68],keramikKM:[.6,.7],keramikDinding:[.6,.72],toren:[.62,.7],plafon:[.62,.78],jendela:[.62,.84],lantai:[.64,.8],
+ pintuUtama:[.66,.86],pintuKamar:[.66,.86],pintuKM:[.66,.86],keramikTangga:[.7,.78],panel:[.7,.8],grounding:[.7,.78],mejaDapur:[.72,.82],teras:[.74,.82],listPlafon:[.76,.84],
+ plint:[.8,.86],catPlafon:[.8,.9],pdam:[.8,.9],catDalam:[.82,.95],catLuar:[.82,.95],railing:[.82,.9],
+ closet:[.86,.95],wastafel:[.86,.95],kitchenSink:[.86,.94],pln:[.86,.96],shower:[.88,.96],kran:[.88,.96],lampu:[.88,.96],bersihAkhir:[.95,1]});
+const pDate=s=>{const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||'');return m?new Date(+m[1],m[2]-1,+m[3]):null};
+const wDate=(J,w,end)=>new Date(J.mulai.getTime()+((w-1)*7+(end?6:0))*864e5);
+const tgl=(d,y)=>d.toLocaleDateString('id-ID',y?{day:'numeric',month:'short',year:'numeric'}:{day:'numeric',month:'short'});
+const pc=v=>fmt(v,2);
+function jadwal(r){
+ const D=r.D,p=S.pg,T=Math.max(2,Math.round(num(p.T))||D.bln*4),tl=TLF(D.lt),rows=[];
+ r.G.forEach((g,gi)=>g.it.forEach(x=>{
+  const f=x.extra!=null?[.85,1]:tl[x.key]||[.1,.9];
+  const as=Math.min(T,1+Math.floor(f[0]*T)),ae=Math.min(T,Math.max(as,Math.ceil(f[1]*T)));
+  const o=S.sch[x.key];let s=as,d=ae-as+1;
+  if(o){s=clamp(Math.round(o.s)||as,1,T);d=clamp(Math.round(o.d)||d,1,T-s+1)}
+  const sp={b:0,u:0,s:0};
+  if(x.extra!=null)sp.s=x.j;else{let t=0;for(const[id,q]of Object.entries(need(x.an,x.v,{}))){const c=q*price(id);sp[R[id].k]+=c;t+=c}
+   if(t){sp.b=Math.round(sp.b*x.j/t);sp.u=Math.round(sp.u*x.j/t);sp.s=x.j-sp.b-sp.u}}
+  rows.push({key:x.key,n:x.n,u:x.u,v:x.v,gi,j:x.j,w:r.jml?x.j/r.jml*100:0,s,d,e:s+d-1,as,ad:ae-as+1,ov:!!o,sp});
+ }));
+ const plan=Array(T).fill(0),rapK=Array.from({length:T},()=>({b:0,u:0,s:0}));
+ rows.forEach(x=>{for(let k=x.s;k<=x.e;k++){plan[k-1]+=x.w/x.d;for(const c in x.sp)rapK[k-1][c]+=x.sp[c]/x.d}});
+ let c=0;const cum=plan.map(v=>c+=v);
+ const lap=p.lap,has=w=>lap[w]&&(Object.keys(lap[w].p||{}).length||Object.keys(lap[w].b||{}).length);
+ const wk=Object.keys(lap).map(Number).filter(w=>w>=1&&has(w)).sort((a,b)=>a-b),W=wk.length?wk[wk.length-1]:0;
+ const at=(f,key,w)=>{let v=0;for(const k of wk){if(k>w)break;const q=lap[k][f]&&lap[k][f][key];if(q!=null)v=q}return v};
+ const pctAt=(key,w)=>at('p',key,w),bAt=(key,w)=>at('b',key,w);
+ const act=[],biaya=[];for(let w=1;w<=W;w++){const on=wk.includes(w);act.push(on?rows.reduce((s,x)=>s+x.w*pctAt(x.key,w)/100,0):null);biaya.push(on?rows.reduce((s,x)=>s+bAt(x.key,w),0):null)}
+ const mulai=pDate(p.mulai)||pDate(nextMonday()),now=new Date();now.setHours(0,0,0,0);
+ return{T,rows,plan,cum,rapK,act,biaya,W,wk,pctAt,bAt,mulai,curW:Math.floor((now-mulai)/6048e5)+1,planAt:w=>w<1?0:cum[Math.min(w,T)-1],G:r.G,r};
+}
+const planItem=(x,w)=>clamp((w-x.s+1)/x.d,0,1)*100;
+const selW=J=>clamp(Math.round(num(S.pg.mg))||clamp(J.curW,1,J.T),1,J.T+12);
+function kpi(J,w){
+ const pl=J.planAt(w),ac=J.rows.reduce((s,x)=>s+x.w*J.pctAt(x.key,w)/100,0),ev=J.rows.reduce((s,x)=>s+x.j*J.pctAt(x.key,w)/100,0),ac$=J.rows.reduce((s,x)=>s+J.bAt(x.key,w),0);
+ const evB=J.rows.reduce((s,x)=>s+(J.bAt(x.key,w)>0?x.j*J.pctAt(x.key,w)/100:0),0),spi=pl>0?ac/pl:0,cpi=ac$>0?evB/ac$:0;
+ return{pl,ac,dev:ac-pl,ev,evB,ac$,spi,cpi,eta:spi>0&&ac<100?Math.ceil(J.T/spi):J.T};
+}
+
+function kurvaSVG(J,wSel){
+ const Nw=Math.max(J.T,J.W),x0=85,x1=220,cw=(x1-x0)/Nw,y0=14,hH=10,fr=4,fh=5.2,yB=196,bodyT=y0+hH,bodyB=yB-fr*fh;
+ const grp=J.G.map((g,gi)=>{const it=J.rows.filter(x=>x.gi==gi),wk=Array(Nw).fill(0);it.forEach(x=>{for(let k=x.s;k<=x.e;k++)wk[k-1]+=x.w/x.d});
+  return{n:g.n.replace('PEKERJAAN ',''),w:it.reduce((s,x)=>s+x.w,0),s:Math.min(...it.map(x=>x.s)),e:Math.max(...it.map(x=>x.e)),wk}}).filter(g=>isFinite(g.s));
+ const rh=(bodyB-bodyT)/Math.max(1,grp.length),fs=Math.min(1.6,cw*.42),vs=Math.min(1.55,cw/3.3);
+ const yv=v=>bodyB-clamp(v,0,100)/100*(bodyB-bodyT),pl=(pts,c,w,da)=>`<polyline points="${pts.map(p=>p4(p[0])+','+p4(p[1])).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"${da?` stroke-dasharray="${da}"`:''}/>`;
+ let s=rc(14,y0,206,hH,{f:'#f1f2f4'})+rc(14,bodyB,206,fr*fh,{f:'#f7f7f8'});
+ s+=tx(17,y0+6.3,'NO',1.7,{b:1})+tx(46,y0+6.3,'URAIAN PEKERJAAN',1.8,{b:1})+tx(78.5,y0+5.2,'BOBOT',1.6,{b:1})+tx(78.5,y0+7.6,'(%)',1.5);
+ for(let m=0;m*4<Nw;m++){const xa=x0+m*4*cw,xb=x0+Math.min(Nw,(m+1)*4)*cw;s+=tx((xa+xb)/2,y0+3.6,(xb-xa>9?'BULAN ':'B')+(m+1),1.6,{b:1})+ln(xa,y0,xa,yB,.3)}
+ s+=ln(x0,y0+5,x1,y0+5,.2);
+ for(let k=0;k<Nw;k++){s+=tx(x0+(k+.5)*cw,y0+8.6,k+1,fs);if(k)s+=ln(x0+k*cw,y0+5,x0+k*cw,yB,.08,GR)}
+ grp.forEach((g,i)=>{const y=bodyT+i*rh;
+  s+=tx(17,y+rh/2+.6,ROM[i]||i+1,1.7)+tx(21,y+rh/2+.6,g.n.length>30?g.n.slice(0,29)+'…':g.n,1.8,{a:'start'})+tx(78.5,y+rh/2+.6,pc(g.w),1.7);
+  s+=rc(x0+(g.s-1)*cw,y+rh*.32,(g.e-g.s+1)*cw,rh*.36,{f:'#fed7aa',s:'#c2410c',w:.15});
+  if(cw>=5.5&&rh>=7)g.wk.forEach((v,k)=>{if(v>0)s+=tx(x0+(k+.5)*cw,y+rh*.27,fmt(v,1),1.15,{c:GR})});
+  s+=ln(14,y+rh,x1,y+rh,.1,GR)});
+ [[0,'Rencana mingguan (%)',J.plan],[1,'Rencana kumulatif (%)',J.cum],[2,'Realisasi kumulatif (%)',J.act],[3,'Deviasi (%)',J.act.map((v,k)=>v==null?null:v-J.planAt(k+1))]].forEach(([i,l,a])=>{const y=bodyB+i*fh;
+  s+=ln(14,y,x1,y,.15)+tx(17,y+fh/2+.6,l,1.65,{a:'start',b:i==2});for(let k=0;k<Nw;k++)if(a[k]!=null)s+=tx(x0+(k+.5)*cw,y+fh/2+.55,fmt(a[k],1),vs,{c:i==3&&a[k]<-.05?'#b91c1c':undefined})});
+ s+=ln(20,y0,20,yB,.2)+ln(72,y0,72,yB,.2)+ln(x0,y0,x0,yB,.3);
+ for(const v of [25,50,75,100]){s+=ln(x0,yv(v),x1,yv(v),.1,'#c2410c','.6 .8')+tx(x0+.6,yv(v)+(v==100?1.8:-.5),v+'%',1.4,{a:'start',c:'#c2410c'})}
+ s+=pl([[x0,bodyB],...Array.from({length:Nw},(_,k)=>[x0+(k+1)*cw,yv(J.planAt(k+1))])],'#c2410c',.45);
+ if(J.W){const ap=J.wk.map(k=>[x0+k*cw,yv(J.act[k-1])]);s+=pl([[x0,bodyB],...ap],'#1d4ed8',.55)+ap.map(p=>ci(p[0],p[1],.45,{f:'#1d4ed8'})).join('')}
+ if(wSel)s+=ln(x0+Math.min(wSel,Nw)*cw,bodyT,x0+Math.min(wSel,Nw)*cw,bodyB,.3,'#1d4ed8','1 .8');
+ s+=rc(14,y0,206,yB-y0,{s:INK,w:.4});
+ const K=J.W?kpi(J,J.W):null,end=wDate(J,J.T,1);
+ const notes=[`Mulai ${tgl(J.mulai,1)}, durasi ${J.T} minggu (± ${dec(J.T/4)} bulan), rencana selesai ${tgl(end,1)}.`,'Bobot = biaya item ÷ jumlah biaya pekerjaan RAB; dibagi rata selama durasi item.','Garis oranye: rencana kumulatif. Garis biru: realisasi kumulatif dari laporan progres mingguan.',
+  K?`Laporan terakhir minggu ke-${J.W}: rencana ${pc(K.pl)}%, realisasi ${pc(K.ac)}%, deviasi ${K.dev>=0?'+':''}${pc(K.dev)}%${K.spi?` (SPI ${fmt(K.spi,2)})`:''}.`:'Belum ada laporan progres.',`Nilai pekerjaan ${rp(J.r.jml)} (sebelum jasa, tak terduga & PPN).`];
+ return sheet('K-01','Kurva S & jadwal','-',s,notes,'JADWAL & KURVA S','minggu / % bobot');
+}
+
 /* ---------- Form input ---------- */
 function renderForm(){
  const I=S.I;let h='';
@@ -930,7 +1025,7 @@ $('#form').addEventListener('click',e=>{
 
 /* ---------- Hasil ---------- */
 let RES;
-const TABS=[['ringkas','Ringkasan'],['rab','RAB Detail'],['gambar','Gambar Kerja'],['spek','Spesifikasi Teknis'],['material','Daftar Material & Upah'],['harga','Harga Dasar'],['analisa','Analisa Harga Satuan'],['asumsi','Asumsi & Cara Hitung']];
+const TABS=[['ringkas','Ringkasan'],['rab','RAB Detail'],['jadwal','Jadwal & Kurva S'],['rap','RAP'],['progres','Update Progres'],['gambar','Gambar Kerja'],['spek','Spesifikasi Teknis'],['material','Daftar Material & Upah'],['harga','Harga Dasar'],['analisa','Analisa Harga Satuan'],['asumsi','Asumsi & Cara Hitung']];
 function update(){RES=hitung();save();renderCards();renderView()}
 function renderCards(){
  const r=RES,D=r.D;
@@ -955,6 +1050,10 @@ function rekapRows(r,cls=''){
 function matSplit(r){const o={b:0,u:0,s:0};for(const[id,q]of Object.entries(r.M))o[R[id].k]+=q*price(id);return o}
 
 function renderView(){
+ const a=document.activeElement,fk=a&&a.dataset&&a.dataset.fk;renderView0();
+ if(fk){const el=document.querySelector(`#view [data-fk="${CSS.escape(fk)}"]`);if(el){el.focus();el.select&&el.select()}}
+}
+function renderView0(){
  const r=RES,D=r.D,v=$('#view');
  if(tab=='ringkas'){
   const ms=matSplit(r),mt=ms.b+ms.u+ms.s||1;
@@ -992,6 +1091,87 @@ function renderView(){
   h+=`</table><div style="margin:10px 0"><button class="btn sm" id="bAdd">＋ Tambah pekerjaan lain (pagar, kanopi, dll.)</button></div>
   <table>${rekapRows(r)}</table><div class="ter">Terbilang: ${terbilang(r.bul)}</div>
   <p class="note">Klik nama pekerjaan untuk melihat analisa harga satuannya. Kolom volume bisa diubah langsung (kotak oranye = diubah manual, ↺ untuk kembali ke hitungan otomatis).</p></div>`;
+  v.innerHTML=h;
+ }
+ else if(tab=='jadwal'){
+  const J=jadwal(r),Nw=Math.max(J.T,J.W),hd=Array.from({length:Nw},(_,k)=>k+1);
+  let h=`<div class="panel" style="margin-bottom:12px"><div class="ctl">
+   <label>Tanggal mulai <input type="date" data-pg="mulai" value="${esc(S.pg.mulai)}"></label>
+   <label>Durasi <input type="text" inputmode="numeric" data-pg="T" data-fk="pgT" value="${J.T}" style="width:56px;text-align:right"> minggu</label>
+   <span class="mute">otomatis ${D.bln*4} mg · selesai ${tgl(wDate(J,J.T,1),1)}</span>
+   <span style="margin-left:auto;display:flex;gap:6px">${Object.keys(S.sch).length?'<button class="btn sm" id="bSchReset">↺ Jadwal otomatis</button>':''}<button class="btn p sm" id="bPrintK">🖨 Cetak Kurva S</button></span></div>
+   <p class="note" style="margin:8px 0 0">Jadwal dibuat otomatis dari item RAB mengikuti urutan kerja (persiapan → pondasi → struktur → dinding → atap → finishing). Bobot = biaya item ÷ jumlah biaya pekerjaan. Mulai & durasi tiap item boleh diubah (kotak oranye), kurva S ikut berubah. Realisasi diisi di tab <b>Update Progres</b>.</p></div>
+  <div class="panel" style="margin-bottom:12px"><div class="paper" data-kz="1">${kurvaSVG(J,J.W)}</div></div>
+  <div class="panel"><table class="gt"><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Bobot %</th><th>Mulai</th><th>Durasi</th>${hd.map(k=>`<th class="c" title="${tgl(wDate(J,k))} – ${tgl(wDate(J,k,1))}">${k}</th>`).join('')}</tr>`;
+  r.G.forEach((g,gi)=>{
+   const it=J.rows.filter(x=>x.gi==gi);
+   h+=`<tr class="g"><td>${ROM[gi]}</td><td colspan="${4+Nw}">${g.n} · ${pc(it.reduce((s,x)=>s+x.w,0))}%</td></tr>`;
+   it.forEach((x,j)=>{const done=J.W?J.pctAt(x.key,J.W)/100*x.d:0;
+    h+=`<tr><td class="mute">${j+1}</td><td style="min-width:200px">${esc(x.n)}</td><td class="n">${pc(x.w)}</td>
+    <td><input class="vin sv ${x.ov?'ov':''}" data-sch="${x.key}" data-f="s" data-fk="ss:${x.key}" value="${x.s}" title="Minggu mulai (otomatis ${x.as})"></td>
+    <td style="white-space:nowrap"><input class="vin sv ${x.ov?'ov':''}" data-sch="${x.key}" data-f="d" data-fk="sd:${x.key}" value="${x.d}" title="Durasi minggu (otomatis ${x.ad})">${x.ov?`<button class="rs" data-schr="${x.key}" title="Kembali ke otomatis">↺</button>`:''}</td>
+    ${hd.map(k=>{const on=k>=x.s&&k<=x.e;return`<td class="c${on?' b':''}${on&&k-x.s<done-1e-9?' d':''}${k==J.curW?' now':''}"></td>`}).join('')}</tr>`});
+  });
+  const ft=(l,a,neg)=>`<tr class="ft"><td></td><td colspan="4">${l}</td>${hd.map(k=>{const v=a[k-1];return`<td class="c${neg&&v<-.05?' dn':''}">${v==null?'':fmt(v,1)}</td>`}).join('')}</tr>`;
+  h+=ft('Rencana mingguan (%)',J.plan)+ft('Rencana kumulatif (%)',J.cum)+ft('Realisasi kumulatif (%)',J.act)+ft('Deviasi (%)',J.act.map((v,k)=>v==null?null:v-J.planAt(k+1)),1);
+  v.innerHTML=h+`</table><p class="note">Kotak oranye muda = rencana pelaksanaan, oranye tua = bagian yang sudah terealisasi (laporan terakhir), garis biru = minggu berjalan.</p></div>`;
+ }
+ else if(tab=='progres'){
+  const J=jadwal(r),w=selW(J),K=kpi(J,w),L=S.pg.lap[w]||{},Nmax=Math.max(J.T,J.W)+8,sg=x=>(x>=0?'+':'')+pc(x);
+  let h=`<div class="panel" style="margin-bottom:12px"><div class="ctl">
+   <label>Laporan <select data-pg="mg">${Array.from({length:Nmax},(_,k)=>k+1).map(k=>`<option value="${k}" ${k==w?'selected':''}>Minggu ke-${k} · ${tgl(wDate(J,k))} – ${tgl(wDate(J,k,1))}${J.wk.includes(k)?' ✓':''}${k==J.curW?' (minggu ini)':''}</option>`).join('')}</select></label>
+   <span class="mute">${J.curW<1?`Proyek mulai ${tgl(J.mulai,1)}`:J.curW>J.T?`Lewat jadwal ${J.curW-J.T} minggu`:`Hari ini minggu ke-${J.curW} dari ${J.T}`}</span>
+   <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" id="bIsiRencana">Isi = rencana</button>${S.pg.lap[w]?'<button class="btn sm" id="bHapusLap">Hapus laporan minggu ini</button>':''}<button class="btn p sm" id="bPrintP">🖨 Cetak laporan</button></span></div>
+   <div class="kp">
+    <div><small>Rencana s/d minggu ${w}</small><b>${pc(K.pl)}%</b></div>
+    <div><small>Realisasi s/d minggu ${w}</small><b>${pc(K.ac)}%</b><div class="bar2"><i style="width:${Math.min(100,K.ac)}%"></i><em style="left:${Math.min(99.5,K.pl)}%"></em></div></div>
+    <div><small>Deviasi jadwal</small><b class="${K.dev<-.005?'dn':'up'}">${sg(K.dev)}%</b><small>${K.dev<-5?'Kritis — tambah tenaga / jam kerja':K.dev<-.005?'Terlambat':'Sesuai / lebih cepat'}</small></div>
+    <div><small>SPI · perkiraan durasi</small><b>${K.pl&&K.ac?fmt(K.spi,2):'–'}</b><small>${K.ac>0&&K.pl?`± ${K.eta} minggu (rencana ${J.T})`:'isi realisasi dulu'}</small></div></div>
+   <div class="ctl"><label style="flex:1">Catatan <input type="text" data-pg="cat" value="${esc(L.cat||'')}" placeholder="Cuaca, kendala, jumlah tukang, material datang, dll." style="flex:1"></label></div>
+   <p class="note" style="margin:8px 0 0">Isi <b>realisasi kumulatif (%)</b> tiap item sampai akhir minggu yang dipilih, dan bila perlu <b>biaya keluar kumulatif</b>. Yang tidak diisi memakai laporan minggu sebelumnya (kotak biru = diisi di minggu ini). Kurva S dan RAP ikut terupdate.</p></div>
+  <div class="panel"><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Bobot %</th><th>Jadwal</th><th class="n">Rencana %</th><th class="n">Realisasi %</th><th class="n">Capaian bobot</th><th class="n">Biaya keluar (Rp)</th><th>Status</th></tr>`;
+  r.G.forEach((g,gi)=>{const it=J.rows.filter(x=>x.gi==gi);
+   h+=`<tr class="g"><td>${ROM[gi]}</td><td colspan="8">${g.n}</td></tr>`;
+   it.forEach((x,j)=>{const pl=planItem(x,w),ac=J.pctAt(x.key,w),b=J.bAt(x.key,w),ps=L.p&&L.p[x.key]!=null,bs=L.b&&L.b[x.key]!=null;
+    const st=ac>=100?'<span class="up">✓ selesai</span>':ac>pl+.005?'<span class="up">▲ lebih cepat</span>':ac>=pl-.005?(pl>0?'<span class="up">sesuai</span>':'<span class="mute">belum mulai</span>'):`<span class="dn">▼ kurang ${fmt(pl-ac,0)}%</span>`;
+    h+=`<tr><td class="mute">${j+1}</td><td>${esc(x.n)}<span class="fx">${dec(x.v)} ${x.u} · RAP ${rp(x.j)}</span></td><td class="n">${pc(x.w)}</td><td class="mute" style="white-space:nowrap">M${x.s}${x.d>1?'–'+x.e:''}</td><td class="n">${fmt(pl,0)}</td>
+    <td class="n"><input class="pp ${ps?'set':''}" inputmode="decimal" data-pp="${x.key}" data-fk="pp:${x.key}" value="${dec(ac)}"></td><td class="n">${pc(x.w*ac/100)}</td>
+    <td class="n"><input class="pin ${bs?'set':''}" inputmode="numeric" data-pb="${x.key}" data-fk="pb:${x.key}" value="${b?fmt(b):''}" placeholder="0"></td><td style="white-space:nowrap">${st}</td></tr>`});
+  });
+  h+=`<tr class="tot"><td></td><td>TOTAL</td><td class="n">${pc(J.rows.reduce((s,x)=>s+x.w,0))}</td><td></td><td class="n">${pc(K.pl)}</td><td></td><td class="n">${pc(K.ac)}</td><td class="n">${rp(K.ac$)}</td><td></td></tr></table></div>`;
+  v.innerHTML=h;
+ }
+ else if(tab=='rap'){
+  const J=jadwal(r),w=J.W,K=kpi(J,w),dpp=r.jml+r.jasa+r.tt,rap=r.jml+r.tt,sb={b:0,u:0,s:0};J.rows.forEach(x=>{for(const c in sb)sb[c]+=x.sp[c]});
+  const kv=(a,b,c='')=>`<tr><td>${a}</td><td class="n ${c}">${b}</td></tr>`,sr=x=>(x<0?'− ':'+ ')+rp(Math.abs(x));
+  let h=`<div class="grid2"><div class="panel"><h3>RAB vs RAP</h3><table class="kv">
+   ${kv('Nilai kontrak (RAB tanpa PPN)',rp(dpp))}${kv('Biaya langsung pekerjaan',rp(r.jml))}
+   ${kv('&nbsp;&nbsp;• Bahan / material',rp(sb.b))}${kv('&nbsp;&nbsp;• Upah tenaga kerja',rp(sb.u))}${kv('&nbsp;&nbsp;• Borongan / barang terpasang',rp(sb.s))}
+   ${kv('Cadangan risiko (tak terduga)',rp(r.tt))}
+   <tr class="st"><td>Total RAP (anggaran pelaksanaan)</td><td class="n">${rp(rap)}</td></tr>
+   ${kv('Rencana laba kotor (jasa)',rp(dpp-rap)+' · '+dec(dpp?((dpp-rap)/dpp*100).toFixed(1):0)+'%','up')}
+  </table><p class="note">RAP = biaya yang benar-benar dikeluarkan pelaksana: volume RAB × koefisien analisa × harga dasar, dipecah bahan / upah / borongan. Masukkan harga beli riil di tab <b>Harga Dasar</b>.</p></div>
+  <div class="panel"><h3>Pengendalian biaya${w?` s/d minggu ke-${w}`:''}</h3>${w?`<table class="kv">
+   ${kv('Progres fisik',pc(K.ac)+'%')}${kv('Nilai pekerjaan selesai (RAP × progres)',rp(K.ev))}${kv('Biaya keluar (realisasi)',rp(K.ac$))}
+   ${kv('Selisih (nilai selesai − biaya keluar, item yang biayanya diisi)',K.ac$?sr(K.evB-K.ac$):'–',K.evB>=K.ac$?'up':'dn')}
+   ${kv('CPI (efisiensi biaya)',K.ac$?fmt(K.cpi,2):'–',K.cpi>=1?'up':'dn')}
+   ${kv('Perkiraan biaya langsung akhir (RAP ÷ CPI)',K.cpi?rp(r.jml/K.cpi):'–')}
+   ${kv('Sisa anggaran RAP',rp(rap-K.ac$))}</table>${K.ac$?'':'<p class="note">Isi kolom biaya keluar di tab Update Progres untuk melihat efisiensi biaya.</p>'}`:'<p class="note">Belum ada laporan progres. Isi realisasi dan biaya keluar di tab <b>Update Progres</b>; bagian ini lalu membandingkan biaya keluar dengan nilai pekerjaan yang sudah selesai.</p>'}</div></div>
+  <div class="panel" style="margin-top:12px"><h3>Rincian RAP per item</h3><table><tr><th>No</th><th>Uraian pekerjaan</th><th class="n">Volume</th><th>Sat</th><th class="n">Bahan</th><th class="n">Upah</th><th class="n">Borongan</th><th class="n">RAP</th><th class="n">Progres</th><th class="n">Biaya keluar</th><th class="n">Sisa anggaran</th><th class="n">Selisih</th></tr>`;
+  r.G.forEach((g,gi)=>{const it=J.rows.filter(x=>x.gi==gi),t={b:0,u:0,s:0,j:0,ac:0};
+   h+=`<tr class="g"><td>${ROM[gi]}</td><td colspan="11">${g.n}</td></tr>`;
+   it.forEach((x,j)=>{const p=w?J.pctAt(x.key,w):0,b=w?J.bAt(x.key,w):0,ev=x.j*p/100;t.b+=x.sp.b;t.u+=x.sp.u;t.s+=x.sp.s;t.j+=x.j;t.ac+=b;
+    h+=`<tr><td class="mute">${j+1}</td><td>${esc(x.n)}</td><td class="n">${dec(x.v)}</td><td>${x.u}</td><td class="n">${fmt(x.sp.b)}</td><td class="n">${fmt(x.sp.u)}</td><td class="n">${fmt(x.sp.s)}</td><td class="n"><b>${fmt(x.j)}</b></td><td class="n">${p?fmt(p,0)+'%':''}</td><td class="n">${b?fmt(b):''}</td><td class="n ${x.j-b<0?'dn':''}">${fmt(x.j-b)}</td><td class="n ${ev-b<0?'dn':'up'}">${b?(ev-b<0?'−':'+')+fmt(Math.abs(ev-b)):''}</td></tr>`});
+   h+=`<tr class="st"><td></td><td colspan="3">Subtotal ${ROM[gi]}</td><td class="n">${fmt(t.b)}</td><td class="n">${fmt(t.u)}</td><td class="n">${fmt(t.s)}</td><td class="n">${fmt(t.j)}</td><td></td><td class="n">${t.ac?fmt(t.ac):''}</td><td class="n">${fmt(t.j-t.ac)}</td><td></td></tr>`});
+  h+=`<tr class="tot"><td></td><td colspan="3">JUMLAH BIAYA LANGSUNG</td><td class="n">${fmt(sb.b)}</td><td class="n">${fmt(sb.u)}</td><td class="n">${fmt(sb.s)}</td><td class="n">${fmt(r.jml)}</td><td></td><td class="n">${K.ac$?fmt(K.ac$):''}</td><td class="n">${fmt(r.jml-K.ac$)}</td><td></td></tr></table>
+  <p class="note">Selisih = nilai pekerjaan selesai (RAP × progres) − biaya keluar. Merah = biaya melebihi progres (boros / harga naik), hijau = hemat.</p></div>`;
+  const cf=[];let ck=0;
+  for(let m=0;m*4<J.T;m++){const o={b:0,u:0,s:0},we=Math.min(J.T,m*4+4);for(let k=m*4;k<we;k++)for(const c in o)o[c]+=J.rapK[k][c];const t=o.b+o.u+o.s;ck+=t;cf.push({m,o,t,ck,we,act:we<=J.W?J.rows.reduce((s,x)=>s+J.bAt(x.key,we),0):null})}
+  h+=`<div class="panel" style="margin-top:12px"><h3>Rencana kebutuhan dana per bulan (cash flow RAP)</h3><table><tr><th>Bulan</th><th>Periode</th><th class="n">Bahan</th><th class="n">Upah</th><th class="n">Borongan</th><th class="n">Total</th><th class="n">Kumulatif</th><th class="n">Biaya keluar kumulatif</th></tr>
+   ${cf.map(c=>`<tr><td>Bulan ${c.m+1}</td><td class="mute">M${c.m*4+1}–${c.we} · ${tgl(wDate(J,c.m*4+1))} – ${tgl(wDate(J,c.we,1))}</td><td class="n">${fmt(c.o.b)}</td><td class="n">${fmt(c.o.u)}</td><td class="n">${fmt(c.o.s)}</td><td class="n">${fmt(c.t)}</td><td class="n">${fmt(c.ck)}</td><td class="n">${c.act!=null?fmt(c.act):''}</td></tr>`).join('')}
+   <tr class="st"><td colspan="2">Jumlah biaya langsung</td><td class="n">${fmt(sb.b)}</td><td class="n">${fmt(sb.u)}</td><td class="n">${fmt(sb.s)}</td><td class="n">${fmt(r.jml)}</td><td></td><td></td></tr></table>
+   <p class="note">Siapkan dana sebelum awal bulan. Cadangan tak terduga ${rp(r.tt)} tidak dijadwalkan. Material boleh dibeli lebih awal dari jadwal pemasangan.</p>
+   <div style="margin-top:8px"><button class="btn p sm" id="bPrintR">🖨 Cetak RAP</button></div></div>`;
   v.innerHTML=h;
  }
  else if(tab=='gambar'){
@@ -1059,10 +1239,34 @@ $('#view').addEventListener('click',e=>{
  if(t.dataset.xdel!=null){S.extra.splice(+t.dataset.xdel,1);update();return}
  const gz=t.closest('[data-gz]');if(gz&&!t.closest('dialog')){const g=window.__SH[+gz.dataset.gz],d=$('#dlg');d.classList.add('big');d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b>${g.code} · ${esc(g.title)}</b><button class="btn sm" id="pClose" style="margin-left:auto">Tutup</button></div><div class="paper">${g.svg}</div>`;d.showModal();return}
  if(t.dataset.gs!=null){const g=window.__SH[+t.dataset.gs],a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n'+g.svg],{type:'image/svg+xml'}));a.download=`${g.code} ${g.title}.svg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);return}
+ if(t.dataset.schr){delete S.sch[t.dataset.schr];update();return}
+ if(t.id=='bSchReset'&&confirm('Kembalikan semua jadwal item ke otomatis?')){S.sch={};update();return}
+ if(t.closest('[data-kz]')&&!t.closest('dialog')){const J=jadwal(RES),d=$('#dlg');d.classList.add('big');d.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b>K-01 · Jadwal pelaksanaan & kurva S</b><button class="btn sm" id="pClose" style="margin-left:auto">Tutup</button></div><div class="paper">${kurvaSVG(J,J.W)}</div>`;d.showModal();return}
+ if(t.id=='bPrintK'){const J=jadwal(RES);$('#print').innerHTML=`<div class="sheet">${kurvaSVG(J,J.W)}</div>`;window.print();return}
+ if(t.id=='bIsiRencana'){const J=jadwal(RES),w=selW(J),L=S.pg.lap[w]=S.pg.lap[w]||{};L.p=L.p||{};J.rows.forEach(x=>{const pl=Math.round(planItem(x,w)*10)/10;if(pl>J.pctAt(x.key,w))L.p[x.key]=pl});update();toast('Realisasi minggu '+w+' diisi sesuai rencana');return}
+ if(t.id=='bHapusLap'){const w=selW(jadwal(RES));if(confirm('Hapus laporan minggu ke-'+w+'?')){delete S.pg.lap[w];update()}return}
+ if(t.id=='bPrintP'){const J=jadwal(RES),w=selW(J);printView(`<h1>LAPORAN PROGRES MINGGU KE-${w}</h1><div style="text-align:center">${esc(S.I.nama)} · ${tgl(wDate(J,w),1)} – ${tgl(wDate(J,w,1),1)}${(S.pg.lap[w]||{}).cat?'<br>Catatan: '+esc(S.pg.lap[w].cat):''}</div>`,`<div class="sheet">${kurvaSVG(J,w)}</div>`);return}
+ if(t.id=='bPrintR'){printView(`<h1>RENCANA ANGGARAN PELAKSANAAN (RAP)</h1><div style="text-align:center">${esc(S.I.nama)}${S.I.lokasi?' · '+esc(S.I.lokasi):''}</div>`);return}
  if(t.id=='bPrintG'){$('#print').innerHTML=window.__SH.map(g=>`<div class="sheet">${g.svg}</div>`).join('');window.print()}
 });
+function printView(head,pre=''){
+ const c=$('#view').cloneNode(true);
+ c.querySelectorAll('input,select').forEach(el=>{const sp=document.createElement('span');sp.textContent=el.tagName=='SELECT'?el.options[el.selectedIndex].text:el.value;el.replaceWith(sp)});
+ c.querySelectorAll('button,.paper,.ctl').forEach(el=>el.remove());
+ $('#print').innerHTML=pre+head+c.innerHTML;window.print();
+}
 $('#view').addEventListener('change',e=>{
  const t=e.target;
+ if(t.dataset.pg){const k=t.dataset.pg;
+  if(k=='mulai'){if(pDate(t.value))S.pg.mulai=t.value}
+  else if(k=='T'){const x=Math.round(numIn(t.value));S.pg.T=x>=2&&x!=RES.D.bln*4?Math.min(x,260):0}
+  else if(k=='mg')S.pg.mg=+t.value;
+  else if(k=='cat'){const w=selW(jadwal(RES));(S.pg.lap[w]=S.pg.lap[w]||{}).cat=t.value}
+  return setTimeout(update)}
+ if(t.dataset.sch){const k=t.dataset.sch,x=jadwal(RES).rows.find(z=>z.key==k),o={s:x.s,d:x.d};o[t.dataset.f]=Math.max(1,Math.round(numIn(t.value)));if(o.s==x.as&&o.d==x.ad)delete S.sch[k];else S.sch[k]=o;return setTimeout(update)}
+ if(t.dataset.pp||t.dataset.pb){const w=selW(jadwal(RES)),L=S.pg.lap[w]=S.pg.lap[w]||{};
+  if(t.dataset.pp)(L.p=L.p||{})[t.dataset.pp]=clamp(numIn(t.value),0,100);else(L.b=L.b||{})[t.dataset.pb]=Math.max(0,Math.round(num(t.value)));
+  return setTimeout(update)}
  if(t.dataset.ov){const k=t.dataset.ov,val=numIn(t.value);let auto;RES.G.forEach(g=>g.it.forEach(x=>{if(x.key==k)auto=x.auto}));if(Math.abs(val-auto)<.005)delete S.ov[k];else S.ov[k]=val;update()}
  else if(t.dataset.hp){const id=t.dataset.hp,val=Math.round(num(t.value));if(val==basePrice(id))delete S.hp[hk(id)];else S.hp[hk(id)]=val;update()}
  else if(t.dataset.x!=null){const e2=S.extra[+t.dataset.x],f=t.dataset.f;e2[f]=f=='n'||f=='u'?t.value:f=='h'?num(t.value):numIn(t.value);update()}
@@ -1085,7 +1289,7 @@ $('#dlg').addEventListener('click',e=>{
  if(t.id=='pClose'||t===$('#dlg'))return $('#dlg').close();
  if(t.id=='pSave'){const id=Object.keys(P).find(k=>P[k].name==(S.I.nama||'Tanpa nama'))||('p'+Date.now());P[id]={name:S.I.nama||'Tanpa nama',t:Date.now(),total:RES.bul,S:JSON.parse(JSON.stringify(S))};LS.set('rab-projects-v1',P);toast('Proyek disimpan');projDlg()}
  if(t.id=='pNew'){S=fresh();renderForm();update();$('#dlg').close();toast('Proyek baru')}
- if(t.dataset.po){S=JSON.parse(JSON.stringify(P[t.dataset.po].S));S.I={...DEF,...S.I};S.extra=S.extra||[];renderForm();update();$('#dlg').close();toast('Proyek dibuka')}
+ if(t.dataset.po){S=JSON.parse(JSON.stringify(P[t.dataset.po].S));normS();renderForm();update();$('#dlg').close();toast('Proyek dibuka')}
  if(t.dataset.pd&&confirm('Hapus proyek "'+P[t.dataset.pd].name+'"?')){delete P[t.dataset.pd];LS.set('rab-projects-v1',P);projDlg()}
 });
 
@@ -1102,6 +1306,7 @@ $('#bPdf').onclick=()=>{
  h+=`</table><h2 class="brk">DAFTAR KEBUTUHAN MATERIAL</h2><table><tr><th>Material</th><th class="n">Kebutuhan</th><th>Sat</th><th class="n">Kemasan</th></tr>`+
  Object.entries(r.M).filter(([id])=>R[id].k=='b').sort((a,b)=>b[1]*price(b[0])-a[1]*price(a[0])).map(([id,q])=>`<tr><td>${R[id].n}</td><td class="n">${dec(q<10?q.toFixed(2):Math.round(q))}</td><td>${R[id].u}</td><td class="n">${R[id].pk?'± '+fmt(Math.ceil(q/R[id].pk[0]))+' '+R[id].pk[1]:''}</td></tr>`).join('')+
  `</table><h2 class="brk">SPESIFIKASI TEKNIS</h2>`+spek(r).map((x,i)=>`<p style="margin:8px 0 2px"><b>${i+1}. ${x[0]}</b></p><ol class="spk" style="margin:0;padding-left:18px">${x[1].map(l=>`<li>${esc(l)}</li>`).join('')}</ol>`).join('')+`<div class="sign"><div>Disetujui,<br><br><br><br>( ${esc(I.pemilik)||'..............................'} )<br>Pemilik</div><div>Dibuat oleh,<br><br><br><br>( .............................. )<br>Perencana / Pelaksana</div></div>`;
+ {const J=jadwal(r);h+=`<div class="sheet">${kurvaSVG(J,J.W)}</div>`}
  $('#print').innerHTML=h;window.print();
 };
 
@@ -1131,9 +1336,9 @@ $('#bXls').onclick=async()=>{
  const wr={};y=1;put(wr,'A1','RENCANA ANGGARAN BIAYA (RAB)');
  [['Pekerjaan',I.nama],['Pemilik',I.pemilik||'-'],['Lokasi',I.lokasi||'-'],['Luas bangunan',`${dec(D.At)} m² (${D.lt} lantai), teras ${dec(D.ter)} m²`]].forEach((x,i)=>{put(wr,'A'+(i+2),x[0]);put(wr,'B'+(i+2),': '+x[1])});
  y=7;['No','Uraian pekerjaan','Volume','Satuan','Harga satuan (Rp)','Jumlah (Rp)'].forEach((t,c)=>put(wr,X.utils.encode_cell({r:y-1,c}),t));
- const subs=[];
+ const subs=[],RR={};
  r.G.forEach((g,i)=>{y++;put(wr,'A'+y,ROM[i]);put(wr,'B'+y,g.n);const a=y+1;
-  g.it.forEach((x,j)=>{y++;put(wr,'A'+y,j+1);put(wr,'B'+y,x.n);put(wr,'C'+y,x.v,NF2);put(wr,'D'+y,x.u);put(wr,'E'+y,x.an?{f:`'Analisa'!E${AR[x.an]}`}:x.hs,NF);put(wr,'F'+y,{f:`ROUND(C${y}*E${y},0)`},NF)});
+  g.it.forEach((x,j)=>{y++;RR[x.key]=y;put(wr,'A'+y,j+1);put(wr,'B'+y,x.n);put(wr,'C'+y,x.v,NF2);put(wr,'D'+y,x.u);put(wr,'E'+y,x.an?{f:`'Analisa'!E${AR[x.an]}`}:x.hs,NF);put(wr,'F'+y,{f:`ROUND(C${y}*E${y},0)`},NF)});
   y++;put(wr,'B'+y,'Subtotal '+ROM[i]);put(wr,'F'+y,{f:`SUM(F${a}:F${y-1})`},NF);subs.push(y)});
  y+=2;const yJ=y;put(wr,'B'+y,'JUMLAH BIAYA PEKERJAAN');put(wr,'F'+y,{f:subs.map(s=>'F'+s).join('+')},NF);
  y++;const yJs=y;put(wr,'B'+y,'Jasa kontraktor (%)');put(wr,'E'+y,num(I.jasa)/100,'0%');put(wr,'F'+y,{f:`ROUND(F${yJ}*E${y},0)`},NF);
@@ -1148,7 +1353,41 @@ $('#bXls').onclick=async()=>{
  Object.entries(r.M).sort((a,b)=>'bus'.indexOf(R[a[0]].k)-'bus'.indexOf(R[b[0]].k)||b[1]*price(b[0])-a[1]*price(a[0])).forEach(([id,q])=>{y++;const pk=R[id].pk;put(wm,'A'+y,R[id].n);put(wm,'B'+y,+q.toFixed(3),NF2);put(wm,'C'+y,R[id].u);put(wm,'D'+y,pk?'± '+Math.ceil(q/pk[0])+' '+pk[1]:'');put(wm,'E'+y,{f:`'Harga Dasar'!D${HR[id]}`},NF);put(wm,'F'+y,{f:`ROUND(B${y}*E${y},0)`},NF);put(wm,'G'+y,{u:'Upah',b:'Bahan',s:'Borongan'}[R[id].k])});
  fin(wm,y,7,[46,12,8,14,14,16,10]);
  const wsp={};put(wsp,'A1','SPESIFIKASI TEKNIS');y=2;spek(r).forEach((x,i)=>{y+=2;put(wsp,'A'+y,(i+1)+'.');put(wsp,'B'+y,x[0].toUpperCase());x[1].forEach((l,j)=>{y++;put(wsp,'A'+y,(i+1)+'.'+(j+1));put(wsp,'B'+y,l)})});fin(wsp,y,2,[6,120]);
- X.utils.book_append_sheet(wb,wr,'RAB');X.utils.book_append_sheet(wb,wa,'Analisa');X.utils.book_append_sheet(wb,wm,'Material');X.utils.book_append_sheet(wb,wh,'Harga Dasar');X.utils.book_append_sheet(wb,wsp,'Spesifikasi');
+ // Jadwal & Kurva S: bobot dari sheet RAB, sebaran mingguan dihitung rumus dari kolom Mulai & Durasi
+ const J=jadwal(r),EC=X.utils.encode_col,c0=6,wk={};
+ put(wk,'A1','JADWAL PELAKSANAAN & KURVA S');put(wk,'A2',`Mulai ${tgl(J.mulai,1)} · ${J.T} minggu — ubah kolom Mulai/Durasi, sebaran bobot & kurva ikut berubah`);
+ ['No','Uraian pekerjaan','Jumlah (Rp)','Bobot','Mulai (mg)','Durasi (mg)'].forEach((t,c)=>put(wk,EC(c)+'4',t));put(wk,EC(c0)+'3','Minggu ke-');
+ for(let k=1;k<=J.T;k++)put(wk,EC(c0+k-1)+'4',k);
+ y=4;
+ r.G.forEach((g,gi)=>{y++;put(wk,'A'+y,ROM[gi]);put(wk,'B'+y,g.n);
+  J.rows.filter(x=>x.gi==gi).forEach((x,j)=>{y++;put(wk,'A'+y,j+1);put(wk,'B'+y,x.n);put(wk,'C'+y,{f:`'RAB'!F${RR[x.key]}`},NF);put(wk,'D'+y,{f:`C${y}/'RAB'!F${yJ}`},'0.00%');put(wk,'E'+y,x.s);put(wk,'F'+y,x.d);
+   for(let k=1;k<=J.T;k++){const cl=EC(c0+k-1);put(wk,cl+y,{f:`IF(AND(${cl}$4>=$E${y},${cl}$4<$E${y}+$F${y}),$D${y}/$F${y},0)`},'0.00%')}})});
+ const yPm=y+2,yCm=y+3,yAm=y+4,yDm=y+5;
+ put(wk,'B'+yPm,'Rencana mingguan');put(wk,'B'+yCm,'Rencana kumulatif');put(wk,'B'+yAm,'Realisasi kumulatif (laporan)');put(wk,'B'+yDm,'Deviasi');put(wk,'D'+yPm,{f:`SUM(D5:D${y})`},'0.00%');
+ for(let k=1;k<=J.T;k++){const cl=EC(c0+k-1),pv=EC(c0+k-2);put(wk,cl+yPm,{f:`SUM(${cl}5:${cl}${y})`},'0.00%');put(wk,cl+yCm,{f:k>1?`${pv}${yCm}+${cl}${yPm}`:`${cl}${yPm}`},'0.00%');
+  if(J.act[k-1]!=null){put(wk,cl+yAm,+(J.act[k-1]/100).toFixed(6),'0.00%');put(wk,cl+yDm,{f:`${cl}${yAm}-${cl}${yCm}`},'0.00%')}}
+ fin(wk,yDm,c0+J.T,[5,44,15,9,10,10,...Array(J.T).fill(7)]);
+ // RAP & pengendalian biaya
+ const wp={};put(wp,'A1','RENCANA ANGGARAN PELAKSANAAN (RAP) & PENGENDALIAN BIAYA');put(wp,'A2',J.W?`Progres & biaya keluar s/d laporan minggu ke-${J.W}`:'Belum ada laporan progres — isi kolom Progres & Biaya keluar');
+ ['No','Uraian pekerjaan','Volume','Satuan','Bahan','Upah','Borongan','RAP','Progres','Nilai selesai','Biaya keluar','Sisa anggaran','Selisih'].forEach((t,c)=>put(wp,EC(c)+'4',t));
+ y=4;
+ r.G.forEach((g,gi)=>{y++;put(wp,'A'+y,ROM[gi]);put(wp,'B'+y,g.n);
+  J.rows.filter(x=>x.gi==gi).forEach((x,j)=>{y++;put(wp,'A'+y,j+1);put(wp,'B'+y,x.n);put(wp,'C'+y,x.v,NF2);put(wp,'D'+y,x.u);put(wp,'E'+y,x.sp.b,NF);put(wp,'F'+y,x.sp.u,NF);put(wp,'G'+y,x.sp.s,NF);put(wp,'H'+y,{f:`SUM(E${y}:G${y})`},NF);
+   put(wp,'I'+y,J.W?J.pctAt(x.key,J.W)/100:0,'0%');put(wp,'J'+y,{f:`ROUND(H${y}*I${y},0)`},NF);put(wp,'K'+y,J.W?J.bAt(x.key,J.W):0,NF);put(wp,'L'+y,{f:`H${y}-K${y}`},NF);put(wp,'M'+y,{f:`IF(K${y}>0,J${y}-K${y},0)`},NF)})});
+ const yS=y+2;put(wp,'B'+yS,'JUMLAH BIAYA LANGSUNG');'EFGHJKLM'.split('').forEach(cl=>put(wp,cl+yS,{f:`SUM(${cl}5:${cl}${y})`},NF));
+ y=yS+2;put(wp,'B'+y,'Nilai kontrak (RAB tanpa PPN)');put(wp,'H'+y,{f:`'RAB'!F${yJ}+'RAB'!F${yJs}+'RAB'!F${yT}`},NF);
+ y++;put(wp,'B'+y,'Cadangan risiko (tak terduga)');put(wp,'H'+y,{f:`'RAB'!F${yT}`},NF);
+ y++;put(wp,'B'+y,'Total RAP');put(wp,'H'+y,{f:`H${yS}+H${y-1}`},NF);
+ y++;put(wp,'B'+y,'Rencana laba kotor');put(wp,'H'+y,{f:`H${y-3}-H${y-1}`},NF);
+ y++;put(wp,'B'+y,'CPI (nilai selesai ÷ biaya keluar)');put(wp,'H'+y,{f:`IF(K${yS}>0,SUMIF(K5:K${yS-2},">0",J5:J${yS-2})/K${yS},0)`},'0.00');
+ fin(wp,y,13,[5,44,9,7,13,13,13,14,9,14,14,14,13]);
+ // Riwayat progres
+ const wg={};put(wg,'A1','RIWAYAT LAPORAN PROGRES MINGGUAN');
+ ['Minggu ke','Periode','Rencana kumulatif','Realisasi kumulatif','Deviasi','Biaya keluar kumulatif','Catatan'].forEach((t,c)=>put(wg,EC(c)+'3',t));y=3;
+ for(let k=1;k<=Math.max(J.T,J.W);k++){y++;put(wg,'A'+y,k);put(wg,'B'+y,`${tgl(wDate(J,k))} – ${tgl(wDate(J,k,1),1)}`);put(wg,'C'+y,+(J.planAt(k)/100).toFixed(6),'0.00%');
+  if(J.act[k-1]!=null){put(wg,'D'+y,+(J.act[k-1]/100).toFixed(6),'0.00%');put(wg,'E'+y,{f:`D${y}-C${y}`},'0.00%');put(wg,'F'+y,J.biaya[k-1],NF)}put(wg,'G'+y,(S.pg.lap[k]||{}).cat||'')}
+ fin(wg,y,7,[10,26,16,18,10,20,50]);
+ X.utils.book_append_sheet(wb,wr,'RAB');X.utils.book_append_sheet(wb,wk,'Kurva S');X.utils.book_append_sheet(wb,wp,'RAP');X.utils.book_append_sheet(wb,wg,'Progres');X.utils.book_append_sheet(wb,wa,'Analisa');X.utils.book_append_sheet(wb,wm,'Material');X.utils.book_append_sheet(wb,wh,'Harga Dasar');X.utils.book_append_sheet(wb,wsp,'Spesifikasi');
  X.writeFile(wb,'RAB '+(I.nama||'Rumah').replace(/[\\/:*?"<>|]/g,'')+'.xlsx');toast('File Excel diunduh');
 };
 
